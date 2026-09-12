@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Call &amp; Translate</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/css/app.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650&family=Sora:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+  <script src="/js/theme-boot.js"></script>
+  <script src="/js/theme.js" type="module"></script>
+  <script src="/baseUrl.config.js"></script>
+</head>
+<body class="app-shell">
+  <header class="app-top">
+    <a class="wordmark" href="/app.html">Call <span>&amp;</span> Translate</a>
+    <div class="app-top-actions">
+      <button type="button" class="credit-pill" id="creditPill" title="Call time and plan">
+        <span id="planLabel">Free</span>
+        <strong id="creditBalance">0s</strong>
+      </button>
+      <a class="btn btn-small btn-ghost" href="/about.html">About</a>
+      <a class="btn btn-small btn-ghost" id="adminLink" href="/admin" hidden>Admin</a>
+      <div class="theme-menu" data-theme-menu></div>
+      <button type="button" class="btn btn-small" id="settingsBtn">Settings</button>
+      <button type="button" class="btn btn-small btn-ghost" id="logoutBtn">Log out</button>
+    </div>
+  </header>
+  <main class="app-main">
+    <section class="brief-pane" aria-label="Call brief">
+      <p class="section-title">Call brief</p>
+      <p class="hint">What you need done, the facts they will ask for, and the answers you want back.</p>
+      <div class="toolbar" id="templateToolbar"></div>
+      <div class="lang-row">
+        <div class="field">
+          <label for="yourLanguage">You speak</label>
+          <select id="yourLanguage"></select>
+        </div>
+        <div class="field">
+          <label for="theirLanguage">They speak</label>
+          <select id="theirLanguage"></select>
+        </div>
+      </div>
+      <div class="lang-row">
+        <div class="field">
+          <label for="yourName">Your name</label>
+          <input
+            id="yourName"
+            type="text"
+            maxlength="80"
+            autocomplete="name"
+            placeholder="Ada Lovelace"
+          />
+        </div>
+        <div class="field">
+          <label for="voiceSelect">Agent voice</label>
+          <div class="voice-field-controls">
+            <select id="voiceSelect"></select>
+            <button type="button" class="btn btn-icon" id="previewVoice" title="Preview voice">▶</button>
+          </div>
+        </div>
+      </div>
+      <div class="fill-brief" id="fillBrief">
+        <p class="section-title">Dictate and fill</p>
+        <p class="hint">Speak or type what you need done. When you stop, the words appear here so you can edit them. Then fill the brief — we’ll ask for any details the other side is likely to need.</p>
+        <div class="field">
+          <label for="fillNotes">What should this call do?</label>
+          <div class="dictate-notes-wrap" id="fillNotesWrap">
+            <textarea id="fillNotes" placeholder="Extend the hotel stay two nights under Ada Lovelace, booking 4419, and get the new total plus a confirmation email."></textarea>
+            <div class="dictate-notes-working" id="fillNotesWorking" hidden>
+              <span class="working-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+              <span>Transcribing…</span>
+            </div>
+          </div>
+        </div>
+        <div class="fill-brief-actions">
+          <button type="button" class="btn dictate-btn" id="dictateBtn" aria-pressed="false" aria-label="Dictate">
+            <span class="dictate-idle" id="dictateIdle">
+              <svg class="dictate-mic" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                <path fill="currentColor" d="M12 14a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/>
+              </svg>
+              <span class="dictate-label">Dictate</span>
+            </span>
+            <span class="dictate-live" id="dictateLive" hidden>
+              <span class="dictate-wave" id="dictateWave"></span>
+              <span class="dictate-live-side">
+                <span class="dictate-timer" id="dictateTimer">0:00</span>
+                <span class="dictate-stop" aria-hidden="true"></span>
+                <span class="dictate-label">Stop</span>
+              </span>
+            </span>
+            <span class="dictate-working" id="dictateWorking" hidden>
+              <span class="working-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+              <span class="dictate-label">Transcribing</span>
+            </span>
+          </button>
+          <button type="button" class="btn btn-primary fill-brief-btn" id="fillBriefBtn">
+            <span class="fill-idle" id="fillIdle">Fill the brief</span>
+            <span class="fill-working" id="fillWorking" hidden>
+              <span class="working-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+              <span>Filling brief…</span>
+            </span>
+          </button>
+        </div>
+        <p class="hint" id="dictateStatus" role="status" aria-live="polite"></p>
+        <p class="notice warn">
+          Dictation uses some of your remaining call time for speech-to-text. Filling the brief uses a little more for Grok. You will see how much was deducted after each step.
+        </p>
+      </div>
+      <div class="field">
+        <label for="goal">What you need done</label>
+        <textarea id="goal" placeholder="Extend the hotel stay by two nights, confirm the new total, and get a written confirmation."></textarea>
+      </div>
+      <div class="field">
+        <label for="rules">How to handle the call</label>
+        <textarea id="rules" placeholder="You are calling on behalf of… Be concise. If they ask for something you don’t have, check with me on speaker."></textarea>
+      </div>
+      <div class="field">
+        <label for="information">Facts for the call</label>
+        <textarea id="information" placeholder="Name, dates, booking or account numbers — and the questions you need answered: price, hours, confirmation number…"></textarea>
+      </div>
+      <p class="hint">Include what the other side will ask for, and what you want to find out.</p>
+      <label class="check-row">
+        <input type="checkbox" id="discloseAi" checked />
+        <span>Tell the other person an AI assistant is on speakerphone with you.</span>
+      </label>
+      <details>
+        <summary>Advanced prompt</summary>
+        <div class="field" style="margin-top:10px">
+          <textarea id="prompt" rows="10"></textarea>
+        </div>
+      </details>
+    </section>
+    <div
+      class="pane-resizer"
+      id="paneResizer"
+      role="separator"
+      aria-orientation="vertical"
+      aria-label="Resize call brief panel"
+      aria-valuemin="260"
+      aria-valuemax="720"
+      aria-valuenow="380"
+      tabindex="0"
+    ></div>
+    <section class="live-pane" id="livePane" aria-label="Live call">
+      <div class="live-header">
+        <div>
+          <p class="section-title">Live call</p>
+          <div class="status-live">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusLabel">Idle</span>
+          </div>
+        </div>
+        <div class="duration" id="durationLabel">0:00</div>
+        <div class="live-controls">
+          <button type="button" class="btn" id="checkMicBtn">Check mic</button>
+          <button type="button" class="btn btn-primary" id="startBtn">Start</button>
+          <button type="button" class="btn" id="pauseBtn" disabled aria-pressed="false" title="Pause the agent without ending the call">Pause</button>
+          <button type="button" class="btn btn-danger" id="stopBtn" disabled aria-haspopup="dialog">End call</button>
+        </div>
+      </div>
+      <p class="disclosure">
+        Put the phone on speaker so you, the agent, and the other person can all hear each other. Follow the live transcript in your language. Jump in to correct or add a question. If they ask for something that is not in the brief, the agent will check with you.
+      </p>
+      <div class="stage">
+        <div class="toolbar" id="sessionToolbar"></div>
+        <div class="transcript" id="transcript" aria-live="polite"></div>
+      </div>
+      <div class="summary" id="summaryPanel">
+        <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
+          <h3>Call report</h3>
+          <button type="button" class="btn btn-small" id="summarizeBtn" disabled>Write report</button>
+        </div>
+        <div class="summary-body" id="summaryBody">No report yet. End a call, then write what was said, what was done, what was captured, and anything still outstanding.</div>
+      </div>
+    </section>
+  </main>
+  <div id="settingsModal" class="modal-backdrop" hidden>
+    <div class="modal" role="dialog" aria-labelledby="settingsTitle">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h2 id="settingsTitle" style="font-family:var(--display);margin:0">Settings</h2>
+        <button type="button" class="btn btn-ghost" id="closeSettings">Close</button>
+      </div>
+      <div class="tabs">
+        <button type="button" class="tab active" data-tab="credits">Call time</button>
+        <button type="button" class="tab" data-tab="plan">Plan</button>
+        <button type="button" class="tab" data-tab="account">Account</button>
+      </div>
+      <div data-pane="credits">
+        <p>Remaining: <strong id="settingsBalance">0s</strong></p>
+        <div id="creditLots"></div>
+        <div id="usageTableWrap"></div>
+      </div>
+      <div data-pane="plan" hidden>
+        <p id="planCopy"></p>
+        <div class="toolbar">
+          <button type="button" class="btn btn-primary" id="upgradeBtn">Upgrade to Paid</button>
+          <button type="button" class="btn" id="portalBtn">Manage billing</button>
+          <button type="button" class="btn btn-danger" id="cancelBtn">Cancel at period end</button>
+          <button type="button" class="btn" id="reactivateBtn">Keep Paid</button>
+        </div>
+        <p class="notice" id="planStatus" hidden></p>
+      </div>
+      <div data-pane="account" hidden>
+        <form id="nameForm">
+          <div class="field"><label for="accountName">Name</label><input id="accountName" maxlength="50" /></div>
+          <button class="btn" type="submit">Save name</button>
+        </form>
+        <form id="passwordForm" style="margin-top:16px">
+          <div class="field"><label for="currentPassword">Current password</label><input id="currentPassword" type="password" /></div>
+          <div class="field"><label for="newPassword">New password</label><input id="newPassword" type="password" minlength="8" /></div>
+          <button class="btn" type="submit">Change password</button>
+        </form>
+        <p style="margin-top:24px"><button type="button" class="btn btn-danger" id="deleteAccountBtn">Delete account</button></p>
+        <div class="legal-inline">
+          <p class="section-title">Legal</p>
+          <nav class="site-footer-links" aria-label="Legal">
+            <a href="/privacy">Privacy</a>
+            <a href="/cookies">Cookies</a>
+            <a href="/terms">Terms</a>
+            <a href="/acceptable-use">Acceptable use</a>
+            <button type="button" data-cookie-settings>Cookie settings</button>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="endCallModal" class="modal-backdrop" hidden>
+    <div class="modal modal-confirm" role="alertdialog" aria-modal="true" aria-labelledby="endCallTitle" aria-describedby="endCallCopy">
+      <h2 id="endCallTitle">End this call?</h2>
+      <p id="endCallCopy">The agent will hang up and the session will close. Pause if you only need the agent to stay quiet.</p>
+      <div class="modal-confirm-actions">
+        <button type="button" class="btn" id="continueCallBtn">Continue call</button>
+        <button type="button" class="btn btn-danger" id="confirmEndCallBtn">End call</button>
+      </div>
+    </div>
+  </div>
+  <div id="followUpModal" class="modal-backdrop follow-up-backdrop" hidden>
+    <div
+      class="modal follow-up-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="followUpTitle"
+      aria-describedby="followUpLead"
+    >
+      <div class="follow-up-head">
+        <p class="follow-up-kicker" id="followUpKicker">Before you call</p>
+        <h2 id="followUpTitle">They’ll likely ask for more</h2>
+        <p class="follow-up-calling" id="followUpCalling" hidden></p>
+        <p class="follow-up-lead" id="followUpLead">
+          The system thinks the person, business, or office you’re calling will ask for a few details that aren’t in what you said yet. The agent will be speaking on your behalf. Add them below, dictate, or skip this step and deal with it on the call when asked.
+        </p>
+        <p class="notice ok follow-up-tip">
+          The more information you give the agent now, the smoother this will go — and the shorter the call.
+        </p>
+      </div>
+      <div class="follow-up-body">
+      <div class="follow-up-questions" id="followUpQuestions"></div>
+      <div class="field follow-up-spoken-field">
+        <label for="followUpSpoken">Or say it in your own words</label>
+        <div class="dictate-notes-wrap" id="followUpSpokenWrap">
+          <textarea
+            id="followUpSpoken"
+            placeholder="Dictate or type anything else the agent should know."
+          ></textarea>
+          <div class="dictate-notes-working" id="followUpSpokenWorking" hidden>
+            <span class="working-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+            <span>Transcribing…</span>
+          </div>
+        </div>
+      </div>
+      </div>
+      <div class="follow-up-footer">
+      <div class="follow-up-actions">
+        <button type="button" class="btn dictate-btn" id="followUpDictateBtn" aria-pressed="false" aria-label="Dictate answers">
+          <span class="dictate-idle" id="followUpDictateIdle">
+            <svg class="dictate-mic" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <path fill="currentColor" d="M12 14a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/>
+            </svg>
+            <span class="dictate-label">Dictate</span>
+          </span>
+          <span class="dictate-live" id="followUpDictateLive" hidden>
+            <span class="dictate-wave" id="followUpDictateWave"></span>
+            <span class="dictate-live-side">
+              <span class="dictate-timer" id="followUpDictateTimer">0:00</span>
+              <span class="dictate-stop" aria-hidden="true"></span>
+              <span class="dictate-label">Stop</span>
+            </span>
+          </span>
+          <span class="dictate-working" id="followUpDictateWorking" hidden>
+            <span class="working-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="dictate-label">Transcribing</span>
+          </span>
+        </button>
+        <div class="follow-up-actions-end">
+          <button type="button" class="btn btn-ghost" id="followUpSkipBtn">
+            Skip — I’ll deal with it on the call
+          </button>
+          <button type="button" class="btn btn-primary" id="followUpApplyBtn">
+            <span class="fill-idle" id="followUpApplyIdle">Add to the brief</span>
+            <span class="fill-working" id="followUpApplyWorking" hidden>
+              <span class="working-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+              <span>Adding…</span>
+            </span>
+          </button>
+        </div>
+      </div>
+      <p class="hint" id="followUpStatus" role="status" aria-live="polite"></p>
+      <p class="notice warn follow-up-credit">
+        Dictation uses some of your remaining call time for speech-to-text. Adding answers uses a little more for Grok.
+      </p>
+      </div>
+    </div>
+  </div>
+  <div id="toast" class="toast" hidden></div>
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>

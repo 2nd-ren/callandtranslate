@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cookie Policy — Call &amp; Translate</title>
+  <meta name="description" content="Cookies and similar storage used by Call &amp; Translate, how long they last, and how to change your choices." />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/app.css" />
+  <script src="/js/theme-boot.js"></script>
+  <script src="/js/theme.js" type="module"></script>
+  <script src="/baseUrl.config.js"></script>
+</head>
+<body class="landing-page">
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="wrap">
+    <nav class="landing-nav">
+      <a class="wordmark" href="/">Call <span>&amp;</span> Translate</a>
+      <div class="landing-nav-links">
+        <a href="/about.html">About</a>
+        <a href="/pricing.html">Pricing</a>
+        <a href="/privacy">Privacy</a>
+      </div>
+      <div class="landing-nav-actions">
+        <button type="button" class="btn btn-ghost btn-icon theme-toggle" data-theme-toggle aria-label="Switch colour theme"></button>
+        <a class="btn btn-ghost btn-small" href="/#login">Sign in</a>
+        <a class="btn btn-primary btn-small" href="/register.html">Create account</a>
+      </div>
+    </nav>
+
+    <main id="main" style="padding: 28px 0 8px">
+      <div class="kicker">Legal</div>
+      <h1>Cookie Policy</h1>
+      <p class="legal-meta">Last updated: 9 September 2026 · Version 2026-09-09</p>
+      <article class="about-article">
+        <p class="about-lede">
+          This policy explains the cookies and similar technologies Call &amp; Translate uses, why we use them,
+          and how you can control them. It should be read with the
+          <a href="/privacy">Privacy Policy</a>.
+        </p>
+
+        <h2>1. What cookies are</h2>
+        <p>
+          Cookies are small text files stored on your device. We also use browser local storage and session storage
+          for the same kinds of job. In this policy “cookies” includes those similar technologies.
+        </p>
+        <p>
+          UK PECR and GDPR require consent for cookies that are not strictly necessary to provide a service you
+          requested. We ask before setting optional cookies. Rejecting optional cookies does not block the site.
+        </p>
+
+        <h2>2. How we ask</h2>
+        <p>
+          On your first visit a banner lets you <strong>accept all</strong>, <strong>reject optional</strong>, or
+          <strong>customise</strong> categories. Accept and reject are both available; optional categories are off
+          until you switch them on. We store your choice, the time, and the policy version for up to 12 months.
+        </p>
+        <p>
+          Change or withdraw that choice at any time with
+          <button type="button" data-cookie-settings>Cookie settings</button>.
+          If we add a new optional category we will ask again.
+        </p>
+
+        <h2>3. Categories</h2>
+        <ul>
+          <li><strong>Strictly necessary</strong> — required to run the site, keep you signed in, and remember this choice. These do not need consent.</li>
+          <li><strong>Functional</strong> — remember theme and display preferences. Off until you opt in.</li>
+          <li><strong>Analytics</strong> — not used today. Off unless you opt in; we will prompt again if we add them.</li>
+          <li><strong>Marketing</strong> — not used today. Off unless you opt in.</li>
+        </ul>
+
+        <h2>4. Cookies we set</h2>
+        <h3>Strictly necessary</h3>
+        <table class="legal-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Where</th>
+              <th>Purpose</th>
+              <th>Duration</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>cat_cookie_consent</code></td>
+              <td>Cookie and local storage</td>
+              <td>Stores your cookie categories, timestamp, and policy version</td>
+              <td>12 months</td>
+            </tr>
+            <tr>
+              <td><code>authToken</code></td>
+              <td>First-party cookie</td>
+              <td>Short-lived signed-in access token so the app can call our API</td>
+              <td>About 32 minutes</td>
+            </tr>
+            <tr>
+              <td><code>refreshToken</code></td>
+              <td>HttpOnly cookie, path <code>/api/auth</code></td>
+              <td>Renews your session without typing your password again</td>
+              <td>Up to 30 days</td>
+            </tr>
+            <tr>
+              <td><code>_id</code>, <code>email</code>, <code>name</code>, <code>emailValidated</code>, <code>numberOfCredits</code></td>
+              <td>First-party cookies</td>
+              <td>Basic profile so the signed-in app can show who you are</td>
+              <td>14 days</td>
+            </tr>
+            <tr>
+              <td><code>authAccessExpiresAt</code></td>
+              <td>Session storage</td>
+              <td>When the access token expires, so we can refresh it quietly</td>
+              <td>Browser session</td>
+            </tr>
+            <tr>
+              <td>Invite / verification keys</td>
+              <td>Session storage</td>
+              <td>Carry an invite or “check your email” message through sign-up</td>
+              <td>Browser session</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Functional (only if you allow them)</h3>
+        <table class="legal-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Where</th>
+              <th>Purpose</th>
+              <th>Duration</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>lpd-theme</code></td>
+              <td>Local storage</td>
+              <td>Light, dark, or system colour theme</td>
+              <td>Until you clear it or reject functional cookies</td>
+            </tr>
+            <tr>
+              <td><code>lpd-palette</code></td>
+              <td>Local storage</td>
+              <td>Accent colour palette</td>
+              <td>Until you clear it or reject functional cookies</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Analytics and marketing</h3>
+        <p>We do not currently set analytics or marketing cookies, pixels, or advertising identifiers.</p>
+
+        <h2>5. Third parties</h2>
+        <ul>
+          <li>
+            <strong>Stripe</strong> — when you pay or open the billing portal, Stripe may set its own cookies as part
+            of the payment you requested. Those are necessary for checkout. See
+            <a href="https://stripe.com/cookies">Stripe cookies</a>.
+          </li>
+          <li>
+            <strong>Google Fonts</strong> — pages load fonts from Google. Google may process your IP address.
+            We do not set a Google analytics cookie.
+          </li>
+          <li>
+            <strong>xAI</strong> — processes audio and text during a call. It does not set cookies on this site.
+          </li>
+        </ul>
+
+        <h2>6. How to control cookies in your browser</h2>
+        <p>
+          You can also delete or block cookies in your browser settings. Blocking strictly necessary cookies will
+          sign you out and may break the app. Our Cookie settings control only this site’s optional categories.
+        </p>
+
+        <h2>7. Contact</h2>
+        <p>
+          Questions: <a href="mailto:info@callandtranslate.com">info@callandtranslate.com</a><br />
+          See also the <a href="/privacy">Privacy Policy</a> and
+          <a href="/terms">Terms of Service</a>.
+        </p>
+      </article>
+    </main>
+
+    <footer class="site-footer">
+      <div>Call &amp; Translate · <a href="mailto:info@callandtranslate.com">info@callandtranslate.com</a></div>
+      <nav class="site-footer-links" aria-label="Legal">
+        <a href="/about.html">About</a>
+        <a href="/pricing.html">Pricing</a>
+        <a href="/privacy">Privacy</a>
+        <a href="/cookies">Cookies</a>
+        <a href="/terms">Terms</a>
+        <a href="/acceptable-use">Acceptable use</a>
+        <button type="button" data-cookie-settings>Cookie settings</button>
+      </nav>
+    </footer>
+  </div>
+</body>
+</html>

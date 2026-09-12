@@ -1,0 +1,46 @@
+{
+  "type": "module",
+  "name": "callandtranslate",
+  "version": "1.0.0",
+  "description": "Call & Translate — get things done in a language you don’t speak",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --watchAll=false --forceExit",
+    "test:watch": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --watchAll --verbose"
+  },
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "@simplewebauthn/server": "^13.2.3",
+    "bcrypt": "6.0.0",
+    "compression": "1.8.1",
+    "config": "3.3.12",
+    "cors": "2.8.5",
+    "dotenv": "16.6.1",
+    "express": "4.22.2",
+    "express-async-errors": "3.1.1",
+    "express-rate-limit": "7.5.1",
+    "form-data": "4.0.5",
+    "helmet": "7.2.0",
+    "joi": "17.13.3",
+    "joi-objectid": "4.0.2",
+    "jsonwebtoken": "9.0.2",
+    "lodash": "4.18.1",
+    "mongoose": "7.8.9",
+    "node-fetch": "2.7.0",
+    "nodemailer": "8.0.8",
+    "stripe": "22.6.0",
+    "winston": "3.17.0",
+    "ws": "8.18.3"
+  },
+  "devDependencies": {
+    "jest": "29.7.0",
+    "supertest": "6.3.4"
+  },
+  "allowScripts": {
+    "bcrypt@6.0.0": true
+  }
+}

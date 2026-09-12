@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Call & Translate</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <script src="/baseUrl.config.js"></script>
+  <script src="/js/theme-boot.js"></script>
+  <script src="/js/theme.js" type="module"></script>
+</head>
+<body class="admin-body">
+  <div class="admin-page-container">
+    <header class="admin-page-header">
+      <div class="admin-page-header-title">
+        <h1>Admin Dashboard</h1>
+        <p>Users, subscriptions, credits, and usage.</p>
+      </div>
+      <div class="admin-header-actions">
+        <div class="theme-menu" data-theme-menu></div>
+        <button id="adminMessageAllButton" class="admin-button admin-button-primary" type="button">Message all users</button>
+        <button id="adminRefreshButton" class="admin-button admin-button-secondary" type="button">Refresh</button>
+        <button id="adminBackButton" class="admin-button admin-button-ghost" type="button">Back to app</button>
+      </div>
+    </header>
+
+    <div id="adminStatusMessage" class="admin-status-message">Loading dashboard…</div>
+
+    <main class="admin-dashboard" aria-live="polite">
+      <section class="admin-panel admin-users-panel">
+        <div class="admin-section-header">
+          <div class="admin-section-title">
+            <h2>Users</h2>
+            <p>Accounts, plans, credits, and call sessions.</p>
+          </div>
+          <div class="admin-section-actions">
+            <input id="adminUsersSearch" class="admin-users-search-input" type="search"
+              placeholder="Search by name or email" autocomplete="off" spellcheck="false"
+              aria-label="Search users by name or email">
+          </div>
+        </div>
+        <div class="admin-users-table-wrapper">
+          <table class="admin-users-table">
+            <thead>
+              <tr>
+                <th><button type="button" class="admin-sort-button" data-sort-key="name">User <span class="admin-sort-indicator" aria-hidden="true"></span></button></th>
+                <th><button type="button" class="admin-sort-button" data-sort-key="email">Email <span class="admin-sort-indicator" aria-hidden="true"></span></button></th>
+                <th>Verified</th>
+                <th><button type="button" class="admin-sort-button" data-sort-key="plan">Plan <span class="admin-sort-indicator" aria-hidden="true"></span></button></th>
+                <th><button type="button" class="admin-sort-button" data-sort-key="subscription">Subscription <span class="admin-sort-indicator" aria-hidden="true"></span></button></th>
+                <th>Billing</th>
+                <th><button type="button" class="admin-sort-button" data-sort-key="credits">Valid <span class="admin-sort-indicator" aria-hidden="true"></span></button></th>
+                <th><button type="button" class="admin-sort-button" data-sort-key="creditsPurchased">Purchased <span class="admin-sort-indicator" aria-hidden="true"></span></button></th>
+                <th><button type="button" class="admin-sort-button" data-sort-key="creditsUsed">Used <span class="admin-sort-indicator" aria-hidden="true"></span></button></th>
+                <th><button type="button" class="admin-sort-button" data-sort-key="creditsExpired">Expired <span class="admin-sort-indicator" aria-hidden="true"></span></button></th>
+                <th><button type="button" class="admin-sort-button" data-sort-key="creditsExpiring">Expiring <span class="admin-sort-indicator" aria-hidden="true"></span></button></th>
+                <th><button type="button" class="admin-sort-button" data-sort-key="nextExpiration">Next expiry <span class="admin-sort-indicator" aria-hidden="true"></span></button></th>
+                <th><button type="button" class="admin-sort-button" data-sort-key="sessions">Sessions <span class="admin-sort-indicator" aria-hidden="true"></span></button></th>
+                <th><button type="button" class="admin-sort-button" data-sort-key="lastActive">Last active <span class="admin-sort-indicator" aria-hidden="true"></span></button></th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="adminUsersTableBody">
+              <tr>
+                <td colspan="15" class="admin-table-empty">No users found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="admin-panel admin-summary-panel">
+        <div class="admin-summary-grid">
+          <div class="admin-summary-card">
+            <span class="admin-summary-label">Total users</span>
+            <span class="admin-summary-value" id="adminTotalUsers">-</span>
+          </div>
+          <div class="admin-summary-card">
+            <span class="admin-summary-label">Paid subscribers</span>
+            <span class="admin-summary-value" id="adminProSubscribers">-</span>
+          </div>
+          <div class="admin-summary-card">
+            <span class="admin-summary-label">Free users</span>
+            <span class="admin-summary-value" id="adminFreeUsers">-</span>
+          </div>
+          <div class="admin-summary-card">
+            <span class="admin-summary-label">Unverified</span>
+            <span class="admin-summary-value" id="adminUnverifiedUsers">-</span>
+          </div>
+          <div class="admin-summary-card">
+            <span class="admin-summary-label">Valid credits</span>
+            <span class="admin-summary-value" id="adminTotalCredits">-</span>
+          </div>
+          <div class="admin-summary-card">
+            <span class="admin-summary-label">Purchased credits</span>
+            <span class="admin-summary-value" id="adminTotalCreditsPurchased">-</span>
+          </div>
+          <div class="admin-summary-card">
+            <span class="admin-summary-label">Credits used</span>
+            <span class="admin-summary-value" id="adminTotalCreditsUsed">-</span>
+          </div>
+          <div class="admin-summary-card">
+            <span class="admin-summary-label">Expired credits</span>
+            <span class="admin-summary-value" id="adminTotalCreditsExpired">-</span>
+          </div>
+          <div class="admin-summary-card">
+            <span class="admin-summary-label">Going to expire</span>
+            <span class="admin-summary-value" id="adminTotalCreditsExpiring">-</span>
+          </div>
+          <div class="admin-summary-card">
+            <span class="admin-summary-label">Sessions</span>
+            <span class="admin-summary-value" id="adminTotalPlaybooks">-</span>
+          </div>
+        </div>
+
+        <div class="admin-model-usage-card" id="adminModelUsageCard">
+          <div class="admin-model-usage-header">
+            <div>
+              <h2>Analytics</h2>
+              <p id="adminModelUsageStatus">Loading…</p>
+            </div>
+            <div class="admin-model-usage-controls">
+              <div class="admin-model-usage-range" role="group" aria-label="Usage range">
+                <button type="button" class="admin-model-usage-range-btn" data-range="day">Day</button>
+                <button type="button" class="admin-model-usage-range-btn" data-range="week">Week</button>
+                <button type="button" class="admin-model-usage-range-btn is-active" data-range="month">Month</button>
+              </div>
+              <div class="admin-model-usage-nav">
+                <button type="button" id="adminModelUsagePrev" class="admin-model-usage-nav-btn" aria-label="Previous period">&#8592;</button>
+                <span id="adminModelUsagePeriodLabel" class="admin-model-usage-period-label">—</span>
+                <button type="button" id="adminModelUsageNext" class="admin-model-usage-nav-btn" aria-label="Next period">&#8594;</button>
+              </div>
+            </div>
+          </div>
+          <div class="admin-model-usage-summary" id="adminModelUsageSummary"></div>
+          <div class="admin-usage-stats" id="adminModelUsageStats"></div>
+          <div class="admin-model-usage-chart-section">
+            <div class="admin-model-usage-chart-header">
+              <h3>Usage trends</h3>
+              <div class="admin-model-usage-chart-type" role="group" aria-label="Chart type">
+                <button type="button" class="admin-model-usage-chart-type-btn is-active" data-chart-type="bar">Bar</button>
+                <button type="button" class="admin-model-usage-chart-type-btn" data-chart-type="line">Line</button>
+              </div>
+            </div>
+            <div class="admin-model-usage-chart-wrap">
+              <canvas id="adminModelUsageChart" aria-label="Model usage chart"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="admin-panel admin-pricing-panel">
+        <div class="admin-section-header">
+          <div class="admin-section-title">
+            <h2>Subscriptions</h2>
+            <p>Call & Translate plans. Pricing is set in code, not from this panel.</p>
+          </div>
+        </div>
+        <div class="admin-pricing-grid" id="adminPlansGrid"></div>
+      </section>
+
+      <section class="admin-panel admin-activity-panel">
+        <div class="admin-section-header">
+          <div class="admin-section-title">
+            <h2>Recent activity</h2>
+            <p>Billing grants, admin credit top-ups, and messages.</p>
+          </div>
+        </div>
+        <div class="admin-activity-table-wrapper">
+          <table class="admin-activity-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>User</th>
+                <th>Event</th>
+                <th>Source</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody id="adminRecentActivityTableBody">
+              <tr>
+                <td colspan="5" class="admin-table-empty">No recent activity.</td>
+              </tr>
+            </tbody>
+          </table>
+          <div id="adminRecentActivityEmpty" class="admin-registration-empty is-hidden">
+            No recent activity yet.
+          </div>
+        </div>
+        <div class="admin-pagination">
+          <button id="adminRecentActivityPrev" class="admin-button admin-button-ghost" type="button">Previous</button>
+          <span id="adminRecentActivityPageLabel" class="admin-pagination-label">Page 1 of 1</span>
+          <button id="adminRecentActivityNext" class="admin-button admin-button-ghost" type="button">Next</button>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div>Call &amp; Translate</div>
+      <nav class="site-footer-links" aria-label="Legal">
+        <a href="/privacy">Privacy</a>
+        <a href="/cookies">Cookies</a>
+        <a href="/terms">Terms</a>
+        <a href="/acceptable-use">Acceptable use</a>
+        <button type="button" data-cookie-settings>Cookie settings</button>
+      </nav>
+    </footer>
+  </div>
+
+  <div id="adminModalBackdrop" class="admin-modal-backdrop is-hidden"></div>
+
+  <div id="adminAddCreditsModal" class="admin-modal admin-modal-wide is-hidden" role="dialog" aria-modal="true" aria-labelledby="adminAddCreditsTitle">
+    <div class="admin-modal-header">
+      <h2 id="adminAddCreditsTitle">Modify credits</h2>
+      <button type="button" class="admin-modal-close" data-admin-modal-close>&times;</button>
+    </div>
+    <form id="adminAddCreditsForm" class="admin-modal-body" autocomplete="off">
+      <p id="adminAddCreditsCurrent" class="admin-modal-hint">Current balance: 0</p>
+      <div id="adminCreditLots" class="admin-credit-lots"></div>
+      <div class="admin-modal-field">
+        <label for="adminAddCreditsAmount">New credit balance</label>
+        <input id="adminAddCreditsAmount" name="credits" type="number" inputmode="numeric" min="0" step="1" required>
+      </div>
+      <div class="admin-modal-field">
+        <label for="adminAddCreditsMessage">Message to user</label>
+        <textarea id="adminAddCreditsMessage" name="message" rows="5"></textarea>
+        <p class="admin-modal-hint">Leave blank to send the default update email. Saving writes a usage-log event for the change.</p>
+      </div>
+      <div id="adminAddCreditsError" class="admin-modal-error" role="alert"></div>
+    </form>
+    <div class="admin-modal-footer">
+      <button type="button" id="adminAddCreditsCancel" class="admin-button admin-button-secondary">Cancel</button>
+      <button type="submit" form="adminAddCreditsForm" class="admin-button admin-button-primary">Save credits</button>
+    </div>
+  </div>
+
+  <div id="adminChangePlanModal" class="admin-modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="adminChangePlanTitle">
+    <div class="admin-modal-header">
+      <h2 id="adminChangePlanTitle">Change plan</h2>
+      <button type="button" class="admin-modal-close" data-admin-modal-close>&times;</button>
+    </div>
+    <form id="adminChangePlanForm" class="admin-modal-body" autocomplete="off">
+      <p id="adminChangePlanDescription" class="admin-modal-hint">Choose the plan this account should use.</p>
+      <div class="admin-modal-field">
+        <label for="adminChangePlanSelect">Plan</label>
+        <select id="adminChangePlanSelect" name="tier" required>
+          <option value="free">Free</option>
+          <option value="pro">Pro</option>
+        </select>
+      </div>
+      <div id="adminChangePlanError" class="admin-modal-error" role="alert"></div>
+    </form>
+    <div class="admin-modal-footer">
+      <button type="button" id="adminChangePlanCancel" class="admin-button admin-button-secondary">Cancel</button>
+      <button type="submit" form="adminChangePlanForm" class="admin-button admin-button-primary">Save plan</button>
+    </div>
+  </div>
+
+  <div id="adminMessageUserModal" class="admin-modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="adminMessageUserTitle">
+    <div class="admin-modal-header">
+      <h2 id="adminMessageUserTitle">Message user</h2>
+      <button type="button" class="admin-modal-close" data-admin-modal-close>&times;</button>
+    </div>
+    <form id="adminMessageUserForm" class="admin-modal-body" autocomplete="off">
+      <div class="admin-modal-field">
+        <label for="adminMessageSubject">Subject</label>
+        <input id="adminMessageSubject" name="subject" type="text" maxlength="120" placeholder="Message from Call & Translate support">
+      </div>
+      <div class="admin-modal-field">
+        <label for="adminMessageBody">Message</label>
+        <textarea id="adminMessageBody" name="message" rows="6" required></textarea>
+      </div>
+      <div class="admin-modal-checkbox">
+        <input type="checkbox" id="adminMessageCopy" name="copyToAdmin">
+        <label for="adminMessageCopy">Send a copy to info@callandtranslate.com</label>
+      </div>
+      <div id="adminMessageUserError" class="admin-modal-error" role="alert"></div>
+    </form>
+    <div class="admin-modal-footer">
+      <button type="button" id="adminMessageUserCancel" class="admin-button admin-button-secondary">Cancel</button>
+      <button type="submit" form="adminMessageUserForm" class="admin-button admin-button-primary">Send message</button>
+    </div>
+  </div>
+
+  <div id="adminDeleteUserModal" class="admin-modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="adminDeleteUserTitle">
+    <div class="admin-modal-header">
+      <h2 id="adminDeleteUserTitle">Delete user</h2>
+      <button type="button" class="admin-modal-close" data-admin-modal-close>&times;</button>
+    </div>
+    <form id="adminDeleteUserForm" class="admin-modal-body" autocomplete="off">
+      <p id="adminDeleteUserDescription" class="admin-modal-warning">
+        This removes the account, call sessions, credits, and Stripe records. Type DELETE to confirm.
+      </p>
+      <div class="admin-modal-field">
+        <label for="adminDeleteUserConfirm">Type DELETE to confirm</label>
+        <input id="adminDeleteUserConfirm" name="confirm" type="text" autocomplete="off" placeholder="DELETE" required>
+      </div>
+      <div id="adminDeleteUserError" class="admin-modal-error" role="alert"></div>
+    </form>
+    <div class="admin-modal-footer">
+      <button type="button" id="adminDeleteUserCancel" class="admin-button admin-button-secondary">Cancel</button>
+      <button type="submit" form="adminDeleteUserForm" id="adminDeleteUserSubmit" class="admin-button admin-button-danger">Delete user</button>
+    </div>
+  </div>
+
+  <div id="adminMessageAllModal" class="admin-modal admin-modal-wide is-hidden" role="dialog" aria-modal="true" aria-labelledby="adminMessageAllTitle">
+    <div class="admin-modal-header">
+      <h2 id="adminMessageAllTitle">Message all users</h2>
+      <button type="button" class="admin-modal-close" data-admin-modal-close>&times;</button>
+    </div>
+    <form id="adminMessageAllForm" class="admin-modal-body" autocomplete="off">
+      <div class="admin-modal-field">
+        <label for="adminMessageAllSubject">Subject</label>
+        <input id="adminMessageAllSubject" name="subject" type="text" maxlength="120" placeholder="Service update from Call & Translate">
+      </div>
+      <div class="admin-modal-field">
+        <label for="adminMessageAllBody">Message</label>
+        <textarea id="adminMessageAllBody" name="message" rows="8" required></textarea>
+      </div>
+      <fieldset class="admin-modal-field admin-ai-draft">
+        <legend>AI draft assistant</legend>
+        <div class="admin-ai-draft-row">
+          <div class="admin-ai-draft-prompt">
+            <label for="adminMessageAllAiPrompt">Instructions for AI</label>
+            <input id="adminMessageAllAiPrompt" type="text" maxlength="2000" placeholder="e.g. Tell users about the new share QR download">
+          </div>
+          <div class="admin-ai-draft-model">
+            <label for="adminMessageAllAiModel">Model</label>
+            <select id="adminMessageAllAiModel">
+              <option value="grok-4.6" selected>Grok 4.6</option>
+              <option value="grok-4.20-0309-reasoning">Grok 4.20 Reasoning</option>
+              <option value="grok-4.20-0309-non-reasoning">Grok 4.20 Non-Reasoning</option>
+            </select>
+          </div>
+          <button type="button" id="adminMessageAllAiGenerate" class="admin-button admin-button-secondary">Generate draft</button>
+        </div>
+      </fieldset>
+      <div id="adminMessageAllError" class="admin-modal-error" role="alert"></div>
+      <div id="adminMessageAllProgress" class="admin-modal-hint is-hidden"></div>
+    </form>
+    <div class="admin-modal-footer">
+      <button type="button" id="adminMessageAllCancel" class="admin-button admin-button-secondary">Cancel</button>
+      <button type="submit" form="adminMessageAllForm" class="admin-button admin-button-primary">Send to all users</button>
+    </div>
+  </div>
+
+  <script src="/js/vendor/chart.umd.min.js"></script>
+  <script type="module" src="/js/admin.js"></script>
+</body>
+</html>

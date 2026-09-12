@@ -1,0 +1,6 @@
+{
+  "jwtPrivateKey": "test_callandtranslate_jwt_key",
+  "db": "mongodb://127.0.0.1:27017/callandtranslate_tests",
+  "baseUrl": "http://127.0.0.1:3005",
+  "startingCredits": 0
+}

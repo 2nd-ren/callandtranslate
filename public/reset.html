@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Choose a new password — Call &amp; Translate</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/css/app.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650&family=Sora:wght@400;600&display=swap" rel="stylesheet" />
+  <script src="/js/theme-boot.js"></script>
+  <script src="/js/theme.js" type="module"></script>
+  <script src="/baseUrl.config.js"></script>
+</head>
+<body>
+  <div class="wrap-narrow" style="padding: 40px 0">
+    <a class="wordmark" href="/">Call <span>&amp;</span> Translate</a>
+    <div class="auth-card" style="margin-top: 24px">
+      <h2>New password</h2>
+      <form id="resetForm">
+        <div class="field"><label for="password">Password</label><input id="password" type="password" required minlength="8" autocomplete="new-password" /></div>
+        <div id="formMsg" class="notice" hidden></div>
+        <button class="btn btn-primary btn-block" type="submit">Update password</button>
+      </form>
+    </div>
+    <footer class="site-footer">
+      <div><a href="mailto:info@callandtranslate.com">info@callandtranslate.com</a></div>
+      <nav class="site-footer-links" aria-label="Legal">
+        <a href="/privacy">Privacy</a>
+        <a href="/cookies">Cookies</a>
+        <a href="/terms">Terms</a>
+        <button type="button" data-cookie-settings>Cookie settings</button>
+      </nav>
+    </footer>
+  </div>
+  <script type="module" src="/js/reset.js"></script>
+</body>
+</html>

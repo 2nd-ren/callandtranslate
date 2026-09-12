@@ -1,0 +1,513 @@
+import auth, { extractAccessJwt } from "../middleware/auth.js";
+import forbidGrokBot from "../middleware/forbidGrokBot.js";
+import jwt from "jsonwebtoken";
+import config from "config";
+import bcrypt from "bcrypt";
+import _ from "lodash";
+import crypto from "crypto";
+import { User, validate as validateUser, validateName, validateEmail } from "../models/user.js";
+import express from "express";
+import sendResetEmail from "../utils/sendResetEmail.js";
+import rateLimit from "express-rate-limit";
+import { ensureCreditBalance } from "../utils/userCredits.js";
+import { getBillingSnapshot } from "../utils/plans.js";
+import {
+  applySessionToResponse,
+  createSession,
+  revokeAllUserSessions,
+} from "../utils/authSessionService.js";
+import {
+  VERIFICATION_GENERIC_MESSAGE,
+  maybeSendVerificationEmail,
+  resolveAppBaseUrl,
+  sendVerificationEmailForUser,
+} from "../utils/emailVerification.js";
+import {
+  ACCOUNT_DELETION_GRACE_MS,
+  deletionStatus,
+  purgeIfDeletionDue,
+} from "../utils/accountDeletion.js";
+import { LEGAL_VERSION } from "../utils/legal.js";
+import { notifyInfoOps } from "../utils/opsNotify.js";
+
+const router = express.Router();
+
+const skipInTest = () => process.env.NODE_ENV === "test";
+
+router.get("/me", auth, async (req, res) => {
+  await ensureCreditBalance(req.user._id);
+  const user = await User.findById(req.user._id).select("-password");
+  if (!user) return res.status(404).send("User not found.");
+  if (await purgeIfDeletionDue(user)) {
+    return res.status(401).json({
+      error: "This account has been deleted.",
+      message: "This account has been deleted.",
+      code: "ACCOUNT_DELETED",
+    });
+  }
+  const payload =
+    typeof user.toObject === "function" ? user.toObject() : { ...user };
+  payload.actorType = "user";
+  const prefsObj = {};
+  if (user.userPreferences) {
+    for (const [key, value] of user.userPreferences) {
+      prefsObj[key] = value;
+    }
+  }
+  payload.userPreferences = prefsObj;
+  payload.billing = await getBillingSnapshot(user._id);
+  Object.assign(payload, deletionStatus(user));
+  res.send(payload);
+});
+
+router.put("/me/preferences", auth, async (req, res) => {
+  const user = await User.findById(req.user._id);
+  if (!user) return res.status(404).send("User not found.");
+  if (req.body.userPreferences && typeof req.body.userPreferences === "object") {
+    const prefs = req.body.userPreferences;
+    if (Object.prototype.hasOwnProperty.call(prefs, "theme")) {
+      const theme = prefs.theme;
+      if (!["light", "dark", "system"].includes(theme)) {
+        return res.status(400).json({
+          error: "Invalid theme preference.",
+          message: "Theme must be light, dark, or system.",
+        });
+      }
+    }
+    if (!user.userPreferences) user.userPreferences = new Map();
+    for (const [key, value] of Object.entries(prefs)) {
+      user.userPreferences.set(key, value);
+    }
+    user.markModified("userPreferences");
+  }
+  await user.save();
+  const prefsObj = {};
+  if (user.userPreferences) {
+    for (const [key, value] of user.userPreferences) {
+      prefsObj[key] = value;
+    }
+  }
+  return res.send({ userPreferences: prefsObj });
+});
+
+router.get("/me/preferences", auth, async (req, res) => {
+  const user = await User.findById(req.user._id);
+  if (!user) return res.status(404).send("User not found.");
+  const prefsObj = {};
+  if (user.userPreferences) {
+    for (const [key, value] of user.userPreferences) {
+      prefsObj[key] = value;
+    }
+  }
+  return res.send({ userPreferences: prefsObj });
+});
+
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 8,
+  skip: skipInTest,
+  message: {
+    error: "Too many registration attempts from this IP.",
+    message: "Too many registration attempts. Please try again later.",
+  },
+});
+
+router.post("/", registerLimiter, async (req, res) => {
+  const { error } = validateUser(req.body);
+  if (error) {
+    return res.status(400).json({
+      error: error.details[0].message,
+      message: error.details[0].message,
+    });
+  }
+
+  const email = String(req.body.email).trim().toLowerCase();
+  const plan = req.body.plan === "pro" ? "pro" : undefined;
+  let user = await User.findOne({ email });
+  if (user) {
+    if (!user.emailValidated) {
+      const sendResult = await maybeSendVerificationEmail(user, req, { plan });
+      return res.status(400).json({
+        error:
+          "An account with that email already exists but is not verified yet.",
+        message:
+          "An account with that email already exists but is not verified yet. Check your inbox and spam folder, or resend the verification email.",
+        code: "EMAIL_TAKEN_UNVERIFIED",
+        email: user.email,
+        emailSent: Boolean(sendResult.sent),
+        retryAfterMs: sendResult.retryAfterMs || 0,
+      });
+    }
+    return res.status(400).json({
+      error: "An account with that email already exists.",
+      message: "An account with that email already exists. Sign in, or reset your password.",
+      code: "EMAIL_TAKEN",
+    });
+  }
+
+  const acceptedAt = new Date();
+  user = new User({
+    name: String(req.body.name).trim(),
+    email,
+    password: req.body.password,
+    token_credit_balance: 0,
+    subscriptionTier: "free",
+    subscriptionStatus: "none",
+    termsAcceptedAt: acceptedAt,
+    privacyAcknowledgedAt: acceptedAt,
+    legalVersionAccepted: String(req.body.legalVersion || LEGAL_VERSION).slice(
+      0,
+      40,
+    ),
+  });
+  const salt = await bcrypt.genSalt(10);
+  user.password = await bcrypt.hash(user.password, salt);
+  await user.save();
+
+  void notifyInfoOps({
+    event: "user_registered",
+    user,
+    lines: ["Status: account created (email verification pending)"],
+  });
+
+  let emailSent = false;
+  try {
+    await sendVerificationEmailForUser(user, req, { plan });
+    await user.save();
+    emailSent = true;
+  } catch (emailError) {
+    console.error("Failed to send verification email", emailError);
+  }
+
+  return res.status(201).json({
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    emailValidated: false,
+    token_credit_balance: user.token_credit_balance,
+    subscriptionTier: "free",
+    subscriptionStatus: "none",
+    verificationRequired: true,
+    emailSent,
+    message: emailSent
+      ? "Account created. Check your email — and your spam folder — for a link to verify and sign in."
+      : "Account created, but we could not send the verification email. Use resend on the next screen.",
+  });
+});
+
+router.get("/verify-email", async (req, res) => {
+  const token = req.query.token || req.headers["x-auth-token"];
+  if (!token) {
+    return res.status(400).json({ message: "A verification token must be provided." });
+  }
+  try {
+    const decoded = jwt.verify(token, config.get("jwtPrivateKey"));
+    if (
+      decoded.purpose !== "emailVerification" ||
+      !decoded.isEmailVerificationToken
+    ) {
+      return res.status(400).json({ message: "The provided token is not a verification token." });
+    }
+    const user = await User.findById(decoded._id);
+    if (!user) return res.status(404).json({ message: "The user with the given ID was not found." });
+    if (!user.emailValidated) {
+      user.emailValidated = true;
+      await user.save();
+    }
+    const session = await createSession(user, req);
+    applySessionToResponse(res, session, req);
+    return res.json({
+      authToken: session.accessToken,
+      token: session.accessToken,
+      expiresIn: session.expiresIn,
+      expiresAt: session.expiresAt,
+      user: _.pick(user, ["_id", "name", "email", "emailValidated"]),
+      emailValidated: true,
+      message: "Email verified. You're signed in.",
+    });
+  } catch (err) {
+    if (err instanceof jwt.TokenExpiredError) {
+      return res.status(400).json({
+        message:
+          "This verification link expired. Request a new one and check your inbox and spam folder.",
+        code: "VERIFICATION_EXPIRED",
+        verificationRequired: true,
+      });
+    }
+    return res.status(400).json({
+      message: "This verification link is not valid. Request a new one below.",
+      code: "VERIFICATION_INVALID",
+    });
+  }
+});
+
+const resendLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 8,
+  skip: skipInTest,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    message: "Too many verification emails requested. Please try again later.",
+    code: "RATE_LIMITED",
+  },
+});
+
+router.post("/resend-verification", resendLimiter, async (req, res) => {
+  const email = String(req.body?.email || "")
+    .trim()
+    .toLowerCase();
+  let user = null;
+  if (email) {
+    user = await User.findOne({ email });
+  } else {
+    const token = extractAccessJwt(req);
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, config.get("jwtPrivateKey"));
+        if (
+          decoded?._id &&
+          decoded.purpose !== "emailVerification" &&
+          !decoded.isEmailVerificationToken
+        ) {
+          user = await User.findById(decoded._id);
+        }
+      } catch {
+        // ignore invalid optional auth
+      }
+    }
+  }
+
+  if (!user) {
+    return res.json({ message: VERIFICATION_GENERIC_MESSAGE });
+  }
+  if (user.emailValidated) {
+    return res.json({
+      message: "This email is already verified. You can sign in.",
+      alreadyVerified: true,
+    });
+  }
+
+  const sendResult = await maybeSendVerificationEmail(user, req);
+  if (sendResult.reason === "cooldown") {
+    return res.status(429).json({
+      message: "Please wait a minute before requesting another verification email.",
+      code: "RESEND_COOLDOWN",
+      retryAfterMs: sendResult.retryAfterMs,
+    });
+  }
+  if (sendResult.reason === "send_failed") {
+    return res.status(503).json({
+      message:
+        "Could not send the verification email right now. Please try again in a moment.",
+      code: "EMAIL_SEND_FAILED",
+    });
+  }
+  return res.json({
+    message:
+      "Verification email sent. Check your inbox and your spam or junk folder.",
+    emailSent: true,
+  });
+});
+
+const resetPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many password reset requests. Please try again later." },
+});
+
+const completeResetLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many reset attempts. Please request a new reset link." },
+});
+
+const PASSWORD_RESET_REQUEST_RESPONSE =
+  "If an account exists for that email, a password reset link will be sent shortly.";
+
+router.post("/send-reset-link", resetPasswordLimiter, async (req, res) => {
+  const email = String(req.body?.email || "")
+    .trim()
+    .toLowerCase();
+  if (!email) {
+    return res.json({ message: PASSWORD_RESET_REQUEST_RESPONSE });
+  }
+  const user = await User.findOne({ email });
+  if (user) {
+    const { token, tokenHash, expiresAt } = user.generatePasswordResetToken();
+    user.resetToken = tokenHash;
+    user.resetUsed = false;
+    user.resetTokenExpiresAt = expiresAt;
+    user.resetRequestedAt = new Date();
+    await user.save();
+    const url = `${resolveAppBaseUrl(req)}/reset.html?token=${encodeURIComponent(token)}`;
+    try {
+      await sendResetEmail(user.name, user.email, url);
+    } catch (err) {
+      console.error("Failed to send reset email", err);
+    }
+  }
+  return res.json({ message: PASSWORD_RESET_REQUEST_RESPONSE });
+});
+
+router.post("/reset", completeResetLimiter, async (req, res) => {
+  const token = String(req.body?.token || "");
+  const password = String(req.body?.password || "");
+  if (!token || password.length < 8) {
+    return res.status(400).json({ message: "A valid token and a new password of at least 8 characters are required." });
+  }
+  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+  const user = await User.findOne({
+    resetToken: tokenHash,
+    resetUsed: false,
+    resetTokenExpiresAt: { $gt: new Date() },
+  });
+  if (!user) {
+    return res.status(400).json({ message: "This reset link is invalid or has expired." });
+  }
+  const salt = await bcrypt.genSalt(10);
+  user.password = await bcrypt.hash(password, salt);
+  user.resetUsed = true;
+  user.resetToken = undefined;
+  user.lastReset = new Date();
+  user.emailValidated = true;
+  await user.save();
+  await revokeAllUserSessions(user._id);
+  const session = await createSession(user, req);
+  applySessionToResponse(res, session, req);
+  return res.json({
+    token: session.accessToken,
+    expiresIn: session.expiresIn,
+    expiresAt: session.expiresAt,
+    message: "Password updated.",
+    _id: user._id,
+    email: user.email,
+    name: user.name,
+  });
+});
+
+router.put("/me/name", auth, forbidGrokBot, async (req, res) => {
+  const { error } = validateName(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
+  const user = await User.findByIdAndUpdate(
+    req.user._id,
+    { name: req.body.name },
+    { new: true },
+  ).select("-password");
+  res.send(user);
+});
+
+router.put("/me/email", auth, forbidGrokBot, async (req, res) => {
+  const { error } = validateEmail(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
+  const email = String(req.body.email).trim().toLowerCase();
+  const existing = await User.findOne({ email });
+  if (existing && String(existing._id) !== String(req.user._id)) {
+    return res.status(400).send("That email is already in use.");
+  }
+  const user = await User.findById(req.user._id);
+  const previous = String(user.email || "").toLowerCase();
+  if (previous !== email) {
+    user.email = email;
+    user.emailValidated = false;
+    user.verificationEmailSentAt = undefined;
+    try {
+      await sendVerificationEmailForUser(user, req);
+    } catch (emailError) {
+      console.error("Failed to send verification email after address change", emailError);
+    }
+    await user.save();
+  }
+  res.send(_.pick(user, ["_id", "name", "email", "emailValidated"]));
+});
+
+const deletionLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 8,
+  skip: skipInTest,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    message: "Too many account deletion attempts. Please try again later.",
+    code: "RATE_LIMITED",
+  },
+});
+
+router.post("/me/deletion", auth, forbidGrokBot, deletionLimiter, async (req, res) => {
+  if (req.body?.confirm !== true) {
+    return res.status(400).json({
+      error: "Confirm account deletion.",
+      message: "Confirm account deletion. This cannot be undone after 24 hours.",
+      code: "CONFIRM_REQUIRED",
+    });
+  }
+  const user = await User.findById(req.user._id);
+  if (!user) return res.status(404).json({ message: "User not found." });
+  if (await purgeIfDeletionDue(user)) {
+    return res.status(401).json({
+      error: "This account has been deleted.",
+      message: "This account has been deleted.",
+      code: "ACCOUNT_DELETED",
+    });
+  }
+  if (!user.deletionScheduledAt) {
+    user.deletionScheduledAt = new Date(Date.now() + ACCOUNT_DELETION_GRACE_MS);
+    await user.save();
+  }
+  return res.json({
+    ...deletionStatus(user),
+    message:
+      "Your account is scheduled for deletion in 24 hours. You can undo this from Profile until then. After that it cannot be undone.",
+  });
+});
+
+router.delete("/me/deletion", auth, forbidGrokBot, async (req, res) => {
+  const user = await User.findById(req.user._id);
+  if (!user) return res.status(404).json({ message: "User not found." });
+  if (await purgeIfDeletionDue(user)) {
+    return res.status(401).json({
+      error: "This account has been deleted.",
+      message: "This account has been deleted.",
+      code: "ACCOUNT_DELETED",
+    });
+  }
+  if (!user.deletionScheduledAt) {
+    return res.status(400).json({
+      error: "This account is not scheduled for deletion.",
+      message: "This account is not scheduled for deletion.",
+      code: "ACCOUNT_NOT_PENDING_DELETION",
+    });
+  }
+  await User.updateOne({ _id: user._id }, { $unset: { deletionScheduledAt: 1 } });
+  return res.json({
+    deletionPending: false,
+    deletionScheduledAt: null,
+    message: "Account deletion cancelled.",
+  });
+});
+
+router.put("/me/password", auth, forbidGrokBot, async (req, res) => {
+  const currentPassword = String(req.body?.currentPassword || "");
+  const newPassword = String(req.body?.newPassword || req.body?.password || "");
+  if (newPassword.length < 8) {
+    return res.status(400).json({ message: "New password must be at least 8 characters." });
+  }
+  const user = await User.findById(req.user._id);
+  const valid = await bcrypt.compare(currentPassword, user.password);
+  if (!valid) {
+    return res.status(401).json({
+      message: "Current password is incorrect.",
+      code: "INVALID_CREDENTIALS",
+    });
+  }
+  const salt = await bcrypt.genSalt(10);
+  user.password = await bcrypt.hash(newPassword, salt);
+  await user.save();
+  res.json({ message: "Password updated." });
+});
+
+export default router;

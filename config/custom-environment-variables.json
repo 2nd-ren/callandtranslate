@@ -1,0 +1,11 @@
+{
+  "jwtPrivateKey": "callandtranslate_jwtPrivateKey",
+  "db": "callandtranslatedb",
+  "baseUrl": "BASE_URL",
+  "startingCredits": "STARTING_CREDITS",
+  "stripeSecretKey": "STRIPE_SECRET_KEY",
+  "stripePublishableKey": "STRIPE_PUBLISHABLE_KEY",
+  "stripeWebhookSecret": "STRIPE_WEBHOOK_SECRET",
+  "stripePriceIdPro": "STRIPE_PRICE_ID_PRO",
+  "stripePriceIdCredits": "STRIPE_PRICE_ID_CREDITS"
+}

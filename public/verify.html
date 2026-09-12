@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Verify email — Call &amp; Translate</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/css/app.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650&family=Sora:wght@400;600&display=swap" rel="stylesheet" />
+  <script src="/js/theme-boot.js"></script>
+  <script src="/js/theme.js" type="module"></script>
+  <script src="/baseUrl.config.js"></script>
+</head>
+<body>
+  <div class="wrap-narrow" style="padding: 40px 0">
+    <a class="wordmark" href="/">Call <span>&amp;</span> Translate</a>
+    <div class="auth-card" style="margin-top: 24px">
+      <h2 id="verifyTitle">Check your email</h2>
+      <p id="verifyMsg" class="sub" aria-live="polite">We sent a link to verify your address and sign you in.</p>
+      <div id="spamCallout" class="notice warn">
+        Check your <strong>spam or junk folder</strong> if you don’t see it in your inbox. The link expires in 15 minutes.
+      </div>
+      <ol id="verifySteps">
+        <li>Open the email from Call &amp; Translate</li>
+        <li>Click <strong>Verify email and sign in</strong></li>
+        <li>You’ll come back here, already signed in</li>
+      </ol>
+      <form id="resendForm">
+        <div class="field" id="emailField">
+          <label for="resendEmail">Email</label>
+          <input id="resendEmail" name="email" type="email" required autocomplete="username" />
+        </div>
+        <div id="resendMsg" class="notice" hidden aria-live="polite"></div>
+        <button class="btn btn-primary btn-block" id="resendBtn" type="submit" data-label="Resend verification email">Resend verification email</button>
+      </form>
+      <a id="verifyContinue" class="btn btn-primary btn-block" href="/app.html" hidden>Open the app</a>
+      <div class="auth-links">
+        <a href="/">Back to sign in</a>
+        <a href="/register.html">Use a different email</a>
+      </div>
+    </div>
+    <footer class="site-footer">
+      <div><a href="mailto:info@callandtranslate.com">info@callandtranslate.com</a></div>
+      <nav class="site-footer-links" aria-label="Legal">
+        <a href="/privacy">Privacy</a>
+        <a href="/cookies">Cookies</a>
+        <a href="/terms">Terms</a>
+        <button type="button" data-cookie-settings>Cookie settings</button>
+      </nav>
+    </footer>
+  </div>
+  <script type="module" src="/js/verify.js"></script>
+</body>
+</html>

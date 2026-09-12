@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pricing — Call &amp; Translate</title>
+  <meta name="description" content="Look around free. Paid is £12 a month for an hour of live translated calling — transcript, speakerphone, and a report when you hang up." />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/css/app.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650&family=Sora:wght@400;600&display=swap" rel="stylesheet" />
+  <script src="/js/theme-boot.js"></script>
+  <script src="/js/theme.js" type="module"></script>
+  <script src="/baseUrl.config.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <nav class="landing-nav">
+      <a class="wordmark" href="/">Call <span>&amp;</span> Translate</a>
+      <div class="landing-nav-links">
+        <a href="/about.html">About</a>
+        <a href="/pricing.html" aria-current="page">Pricing</a>
+      </div>
+      <div class="landing-nav-actions">
+        <button type="button" class="btn btn-ghost btn-icon theme-toggle" data-theme-toggle aria-label="Switch colour theme"></button>
+        <a class="btn btn-ghost btn-small" href="/#login">Sign in</a>
+        <a class="btn btn-primary btn-small" href="/register.html">Create account</a>
+      </div>
+    </nav>
+    <main style="padding: 24px 0 64px">
+      <div class="kicker">Plans</div>
+      <h1>Look around free. Call on Paid.</h1>
+      <p class="lead">An hour of live, translated calling for £12 a month. Credits are call seconds and expire 30 days after they are added. New accounts start with zero credits until we switch on the free testing minutes.</p>
+      <div class="pricing-grid">
+        <section class="price-card">
+          <h2>Free</h2>
+          <div class="price">£0 <small>/ month</small></div>
+          <p>Open the app, set a brief, save templates. Two testing minutes per month are planned — not granted yet.</p>
+          <ul>
+            <li>Browse the app</li>
+            <li>Save call templates</li>
+            <li>Review past sessions</li>
+          </ul>
+          <a class="btn" data-free-cta href="/register.html">Create a free account</a>
+          <p class="notice" data-free-status hidden></p>
+        </section>
+        <section class="price-card featured">
+          <h2>Paid</h2>
+          <div class="price">£12 <small>/ month</small></div>
+          <p>One hour of live translated call time each month.</p>
+          <ul>
+            <li>3,600 seconds of call time</li>
+            <li>Live transcript and translation into your language</li>
+            <li>Jump in on speakerphone; missing facts go through you</li>
+            <li>Saved transcript and a post-call report</li>
+          </ul>
+          <a class="btn btn-primary" data-pro-cta href="/register.html?plan=pro">Start Paid</a>
+          <p class="notice" data-pro-status hidden></p>
+        </section>
+      </div>
+      <section id="how-credits-work">
+        <h2>How credits work</h2>
+        <div id="pricingExplainer"></div>
+        <div id="pricingCalculator"></div>
+        <div id="pricingTopUp"></div>
+        <p class="notice" data-credits-status hidden></p>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div>Call &amp; Translate · <a href="mailto:info@callandtranslate.com">info@callandtranslate.com</a></div>
+      <nav class="site-footer-links" aria-label="Legal">
+        <a href="/about.html">About</a>
+        <a href="/privacy">Privacy</a>
+        <a href="/cookies">Cookies</a>
+        <a href="/terms">Terms</a>
+        <a href="/acceptable-use">Acceptable use</a>
+        <button type="button" data-cookie-settings>Cookie settings</button>
+      </nav>
+    </footer>
+  </div>
+  <script type="module" src="/js/pricing.js"></script>
+</body>
+</html>

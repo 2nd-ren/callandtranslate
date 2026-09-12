@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Call &amp; Translate — get things done in a language you don’t speak</title>
+  <meta name="description" content="Need someone to call in a language you don’t speak? Brief Call &amp; Translate, put the phone on speaker, and follow a live transcript in your language while it gets the job done." />
+  <meta property="og:title" content="Call &amp; Translate — get things done in a language you don’t speak" />
+  <meta property="og:description" content="A live caller that talks to them in their language while you stay on speakerphone, follow along, and jump in." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/app.css" />
+  <script src="/js/theme-boot.js"></script>
+  <script src="/js/theme.js" type="module"></script>
+  <script src="/baseUrl.config.js"></script>
+</head>
+<body class="landing-page">
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="wrap">
+    <nav class="landing-nav">
+      <a class="wordmark" href="/">Call <span>&amp;</span> Translate</a>
+      <div class="landing-nav-links">
+        <a href="#how">How it works</a>
+        <a href="/about.html">About</a>
+        <a href="/pricing.html">Pricing</a>
+      </div>
+      <div class="landing-nav-actions">
+        <button type="button" class="btn btn-ghost btn-icon theme-toggle" data-theme-toggle aria-label="Switch colour theme"></button>
+        <a class="btn btn-ghost btn-small" href="#login">Sign in</a>
+        <a class="btn btn-primary btn-small" href="/register.html">Create account</a>
+      </div>
+    </nav>
+
+    <main id="main">
+      <section class="hero">
+        <div>
+          <div class="kicker">Live translated caller</div>
+          <h1>You don’t speak the language. We’ll make the call.</h1>
+          <p class="lead">
+            Tell it the job and the facts. Put the phone on speaker. It talks to them in
+            their language while you follow a live transcript in yours — then jump in
+            whenever you need to.
+          </p>
+          <div class="audience-pills">
+            <span class="pill you">New in a country</span>
+            <span class="pill you">On holiday</span>
+            <span class="pill them">Teams without a translator</span>
+          </div>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="/register.html">Create a free account</a>
+            <a class="btn" href="#how">See how it works</a>
+          </div>
+          <div class="lang-split">
+            <div class="lang-card you">
+              <b>You stay on the line</b>
+              <span>Your language</span>
+            </div>
+            <div class="lang-card them">
+              <b>They hear a caller</b>
+              <span>Theirs</span>
+            </div>
+          </div>
+          <div class="points">
+            <div class="point"><span class="dot"></span><div><b>Briefed like someone who works for you</b><span>Give it the goal, the facts they will ask for, and the answers you need back.</span></div></div>
+            <div class="point"><span class="dot"></span><div><b>Nothing is said in the dark</b><span>Read the transcript and translation as it happens. Interrupt, correct, or add a question.</span></div></div>
+            <div class="point"><span class="dot"></span><div><b>A report when you hang up</b><span>Transcript, what was done, what was learned, and anything still outstanding.</span></div></div>
+          </div>
+        </div>
+
+        <aside class="auth-card" id="login">
+          <h2>Sign in</h2>
+          <p class="sub">New accounts sign in from the verification email. Check spam if you do not see it.</p>
+          <form id="loginForm">
+            <div class="field">
+              <label for="email">Email</label>
+              <input id="email" name="email" type="email" autocomplete="username webauthn" required />
+            </div>
+            <div class="field">
+              <label for="password">Password</label>
+              <input id="password" name="password" type="password" autocomplete="current-password" required />
+            </div>
+            <div id="loginError" class="notice error" hidden></div>
+            <div id="unverifiedNotice" class="notice warn" hidden aria-live="polite">
+              <p id="unverifiedText" style="margin:0 0 8px"></p>
+              <p style="margin:0 0 12px">Check your <strong>spam or junk folder</strong> if you don’t see it in your inbox.</p>
+              <button type="button" class="btn btn-primary btn-block" id="loginResendBtn" data-label="Resend verification email">Resend verification email</button>
+              <p class="sub" style="margin:12px 0 0"><a id="unverifiedHelpLink" href="/verify.html">Open the check-your-email page</a></p>
+            </div>
+            <button class="btn btn-primary btn-block" type="submit">Sign in</button>
+            <div class="passkey-divider">or</div>
+            <button class="btn btn-block" id="passkeyLoginBtn" type="button">Sign in with a passkey</button>
+            <div class="auth-links">
+              <a href="/forgot.html">Forgot password</a>
+              <a href="/register.html">Create an account</a>
+            </div>
+          </form>
+        </aside>
+      </section>
+
+      <section class="landing-section" aria-label="Why people use it">
+        <div class="promise-row">
+          <div class="promise">
+            <b>A caller, not a phrasebook</b>
+            <span>It has the brief, handles the conversation, and gets the outcome — while you stay on speaker.</span>
+          </div>
+          <div class="promise">
+            <b>Ready in the time it takes to explain the job</b>
+            <span>No booking an interpreter. Write what you need done and the facts to take on the call.</span>
+          </div>
+          <div class="promise">
+            <b>You never lose the thread</b>
+            <span>If they ask for something it doesn’t have, it tells them it will check with you, then asks you in your language.</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="landing-section" id="how">
+        <div class="section-head">
+          <div class="kicker">How it works</div>
+          <h2>Brief it. Put them on speaker. Stay in control.</h2>
+          <p>You are on the call the whole time. The app is the person who speaks their language and gets things done.</p>
+        </div>
+        <div class="steps">
+          <article class="step">
+            <div class="step-num">01</div>
+            <h3>Tell it the job</h3>
+            <p>What you need done, the facts they will ask for, and the questions you want answered.</p>
+          </article>
+          <article class="step">
+            <div class="step-num">02</div>
+            <h3>Dial and speakerphone</h3>
+            <p>Call the number yourself, put the phone on speaker, and start the agent in their language.</p>
+          </article>
+          <article class="step">
+            <div class="step-num">03</div>
+            <h3>Follow along live</h3>
+            <p>Read the transcript and a translation into your language. Jump in to correct or add a question.</p>
+          </article>
+          <article class="step">
+            <div class="step-num">04</div>
+            <h3>Keep the record</h3>
+            <p>The transcript is saved. A report covers what was said, what was done, what was captured, and what is still outstanding.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="landing-section" id="live">
+        <div class="section-head">
+          <div class="kicker">On the call</div>
+          <h2>A natural conversation. Nothing missed.</h2>
+          <p>They hear a fluent caller. You see every line in your language, and you can take the wheel at any moment.</p>
+        </div>
+        <div class="live-split">
+          <div class="feature-list">
+            <div>
+              <h3>Live transcript and translation</h3>
+              <p>As they talk, you read what was said and what it means in your language — so you can follow, not just hope.</p>
+            </div>
+            <div>
+              <h3>Interrupt in your language</h3>
+              <p>Add a question, change the request, or correct a detail. The agent conveys it in their language and continues.</p>
+            </div>
+            <div>
+              <h3>Missing facts go through you</h3>
+              <p>If they ask for something that isn’t in the brief, the agent says it will check with you, asks you, then answers them. No guessing, no dead air that hides a problem.</p>
+            </div>
+            <div>
+              <h3>Everyone can hear everyone</h3>
+              <p>Speakerphone is the point. You, the agent, and the other person share the same call, which keeps the conversation honest.</p>
+            </div>
+          </div>
+          <aside class="mock-call" aria-label="Example live transcript">
+            <div class="mock-top"><span><span class="mock-live"></span>Live · they speak Spanish</span><span>Your language: English</span></div>
+            <article class="turn agent">
+              <header><span>Agent</span><span>to them</span></header>
+              <div class="original">Hola, llamo para recoger una receta a nombre de Maya Chen.</div>
+              <div class="translated">Hello, I’m calling to collect a prescription for Maya Chen.</div>
+            </article>
+            <article class="turn caller">
+              <header><span>Pharmacy</span><span>to the agent</span></header>
+              <div class="original">¿Tiene el número de receta?</div>
+              <div class="translated">Do you have the prescription number?</div>
+            </article>
+            <article class="turn agent">
+              <header><span>Agent</span><span>to them, then you</span></header>
+              <div class="original">Un momento, se lo pregunto.</div>
+              <div class="translated">One moment — I’ll ask the person I’m with. They’re asking for the prescription number.</div>
+            </article>
+            <article class="turn you">
+              <header><span>You</span><span>on speaker</span></header>
+              <div class="original">It’s 4821. Also ask if it includes the antibiotics.</div>
+            </article>
+          </aside>
+        </div>
+      </section>
+
+      <section class="landing-section" id="who">
+        <div class="section-head">
+          <div class="kicker">Who it’s for</div>
+          <h2>When you need something done, and you don’t speak their language.</h2>
+        </div>
+        <div class="audience-grid">
+          <article class="audience-card you">
+            <h3>New in a country, or on holiday</h3>
+            <p>Hotels, pharmacies, landlords, clinics, town halls, restaurants, delayed luggage, a missed reservation — the calls that stall because you can’t do them yourself.</p>
+            <ul>
+              <li>Book, change, cancel, collect, confirm</li>
+              <li>Ask the questions you actually need answered</li>
+              <li>Leave with a written record, not a blur of a call</li>
+            </ul>
+          </article>
+          <article class="audience-card them">
+            <h3>Companies without a translator on hand</h3>
+            <p>Suppliers, venues, local offices, customers, and partners who work in another language. You don’t need a staff interpreter for a 12-minute call.</p>
+            <ul>
+              <li>Get a status, a quote, a booking, or a yes/no</li>
+              <li>Give the agent the file notes the other side will ask for</li>
+              <li>Share the report with whoever has to follow up</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="landing-section" id="after">
+        <div class="section-head">
+          <div class="kicker">After you hang up</div>
+          <h2>The call doesn’t vanish.</h2>
+          <p>You keep the transcript and a report you can act on — including anything that still needs doing.</p>
+        </div>
+        <div class="report-grid">
+          <div class="report-card"><b>What was said</b><span>Full transcript, with translation into your language.</span></div>
+          <div class="report-card"><b>What was done</b><span>The outcome: booked, confirmed, refused, or still pending.</span></div>
+          <div class="report-card"><b>What was captured</b><span>Names, numbers, prices, times, and anything else they gave you.</span></div>
+          <div class="report-card"><b>What’s outstanding</b><span>Callbacks, documents to send, questions they couldn’t answer.</span></div>
+        </div>
+      </section>
+
+      <section class="landing-section" id="why">
+        <div class="section-head">
+          <div class="kicker">Why this, not an interpreter</div>
+          <h2>Traditional translation is often the wrong tool.</h2>
+          <p>Hiring someone takes setup you don’t have when the pharmacy closes in twenty minutes, or a supplier needs an answer today.</p>
+        </div>
+        <div class="compare-grid">
+          <article class="compare-card">
+            <h3>Typical interpreter booking</h3>
+            <ul>
+              <li>Schedule a person, often ahead of time</li>
+              <li>Brief them separately, then hope nothing was missed</li>
+              <li>Hard to jump in, hard to keep a usable record</li>
+              <li>Overkill for a short, practical call</li>
+            </ul>
+          </article>
+          <article class="compare-card better">
+            <h3>Call &amp; Translate</h3>
+            <ul>
+              <li>Write the job in your own words — goal, facts, and questions</li>
+              <li>On speaker with you, live, in their language</li>
+              <li>You see every line and can correct it on the spot</li>
+              <li>Transcript and report waiting when you hang up</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="landing-section">
+        <div class="cta-banner">
+          <div>
+            <h2>Ready when the other side doesn’t speak your language.</h2>
+            <p>Create an account, save a brief, and make the next call with someone who can actually finish it.</p>
+          </div>
+          <div class="cta-actions">
+            <a class="btn btn-primary" href="/register.html">Create a free account</a>
+            <a class="btn" href="/about.html">Read the full story</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div>Call &amp; Translate · <a href="mailto:info@callandtranslate.com">info@callandtranslate.com</a></div>
+      <nav class="site-footer-links" aria-label="Legal">
+        <a href="/about.html">About</a>
+        <a href="/pricing.html">Pricing</a>
+        <a href="/privacy">Privacy</a>
+        <a href="/cookies">Cookies</a>
+        <a href="/terms">Terms</a>
+        <a href="/acceptable-use">Acceptable use</a>
+        <button type="button" data-cookie-settings>Cookie settings</button>
+      </nav>
+    </footer>
+  </div>
+  <script src="/js/vendor/simplewebauthn-browser.js"></script>
+  <script type="module" src="/js/login.js"></script>
+</body>
+</html>

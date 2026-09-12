@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>You're on Paid — Call &amp; Translate</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/css/app.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650&family=Sora:wght@400;600&display=swap" rel="stylesheet" />
+  <script src="/js/theme-boot.js"></script>
+  <script src="/js/theme.js" type="module"></script>
+  <script src="/baseUrl.config.js"></script>
+  <script type="module">
+    const params = new URLSearchParams(location.search);
+    if (params.get("type") === "credits") {
+      document.title = "Call time added — Call & Translate";
+      const kicker = document.getElementById("successKicker");
+      const title = document.getElementById("successTitle");
+      const message = document.getElementById("successMessage");
+      if (kicker) kicker.textContent = "Call time";
+      if (title) title.textContent = "Extra hour added.";
+      if (message) {
+        message.textContent =
+          "Your purchase is confirmed. The new call time expires 30 days after purchase. We have emailed the purchase date, expiry date, and your updated balance.";
+      }
+    }
+  </script>
+</head>
+<body>
+  <div class="wrap wrap-narrow">
+    <nav class="landing-nav">
+      <a class="wordmark" href="/">Call <span>&amp;</span> Translate</a>
+    </nav>
+    <main id="main" style="padding-top:48px">
+      <div class="kicker" id="successKicker">Paid</div>
+      <h1 id="successTitle">You're on Paid.</h1>
+      <p class="lead" id="successMessage">
+        An hour of call time has been added. It expires 30 days after it is granted. Open the app to start a call.
+      </p>
+      <p><a class="btn btn-primary" href="/app.html">Open the app</a></p>
+    </main>
+    <footer class="site-footer">
+      <div><a href="mailto:info@callandtranslate.com">info@callandtranslate.com</a></div>
+      <nav class="site-footer-links" aria-label="Legal">
+        <a href="/privacy">Privacy</a>
+        <a href="/cookies">Cookies</a>
+        <a href="/terms">Terms</a>
+        <button type="button" data-cookie-settings>Cookie settings</button>
+      </nav>
+    </footer>
+  </div>
+</body>
+</html>

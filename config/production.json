@@ -1,0 +1,5 @@
+{
+  "name": "Call & Translate - Production",
+  "baseUrl": "https://callandtranslate.com",
+  "db": "mongodb://127.0.0.1:27017/callandtranslatedb"
+}

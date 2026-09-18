@@ -1,5 +1,6 @@
 import fetch from "node-fetch";
 import FormData from "form-data";
+import { getXaiSttModel } from "./xaiSttModel.js";
 
 export const XAI_STT_ENDPOINT = "https://api.x.ai/v1/stt";
 export const XAI_STT_MODEL_NAME = "xai-stt-rest";
@@ -72,6 +73,7 @@ export async function transcribeAudioBufferWithXai({
   channels,
   audioFormat,
   sampleRate,
+  model,
 } = {}) {
   if (!apiKey) {
     const error = new Error("XAI_API_KEY is not configured");
@@ -95,6 +97,9 @@ export async function transcribeAudioBufferWithXai({
   }
 
   const formData = new FormData();
+  // Non-file fields must come before `file` (xAI multipart requirement).
+  // Always send an explicit model so we never silently default to 1.0.
+  formData.append("model", getXaiSttModel(model));
   appendBooleanIfDefined(formData, "format", useFormatting);
   appendIfDefined(formData, "language", language);
   appendBooleanIfDefined(formData, "filler_words", fillerWords);

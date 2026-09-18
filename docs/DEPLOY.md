@@ -58,3 +58,17 @@ STRIPE_SECRET_KEY=rk_... node scripts/ensure-stripe-catalog.mjs
 ```
 
 Webhook: `https://callandtranslate.com/api/stripe/webhook`
+
+## Optional xAI STT model
+
+Speech-to-text defaults to Transcribe 2.0 (`grok-voice-transcribe-2.0`) via
+`utils/xaiSttModel.js`. To pin an allowlisted model, set in
+`/etc/callandtranslate.env`:
+
+```
+XAI_STT_MODEL=grok-voice-transcribe-2.0
+```
+
+Allowed values: `grok-voice-transcribe-2.0`, `grok-voice-transcribe-1.0`.
+xAI has no STT `-latest` alias; bump the constant in `xaiSttModel.js` when a
+newer version ships.

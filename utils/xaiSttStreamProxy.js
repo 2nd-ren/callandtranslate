@@ -1,6 +1,7 @@
 import config from "config";
 import jwt from "jsonwebtoken";
 import { WebSocket, WebSocketServer } from "ws";
+import { getXaiSttModel } from "./xaiSttModel.js";
 
 const STT_PROXY_PATH = "/api/voice/stt/stream";
 const XAI_STT_STREAM_URL = "wss://api.x.ai/v1/stt";
@@ -18,6 +19,8 @@ const ALLOWED_STT_PARAMS = new Set([
   "filler_words",
   "smart_turn",
   "smart_turn_timeout",
+  // Listed for completeness; client `model` is ignored — server forces latest.
+  "model",
 ]);
 
 function parseCookieHeader(cookieHeader = "") {
@@ -69,6 +72,8 @@ function writeUpgradeError(socket, statusCode, message) {
 function buildXaiSttUrl(requestUrl) {
   const xaiUrl = new URL(XAI_STT_STREAM_URL);
   const defaults = {
+    // Always force server-side latest STT model (ignore client model).
+    model: getXaiSttModel(),
     sample_rate: "24000",
     encoding: "pcm",
     interim_results: "true",
@@ -79,12 +84,13 @@ function buildXaiSttUrl(requestUrl) {
     xaiUrl.searchParams.set(key, value);
   });
   requestUrl.searchParams.forEach((value, key) => {
-    if (ALLOWED_STT_PARAMS.has(key)) {
-      if (key === "keyterm") {
-        xaiUrl.searchParams.append(key, value);
-      } else {
-        xaiUrl.searchParams.set(key, value);
-      }
+    if (!ALLOWED_STT_PARAMS.has(key)) return;
+    // Do not let clients override model — always use getXaiSttModel().
+    if (key === "model") return;
+    if (key === "keyterm") {
+      xaiUrl.searchParams.append(key, value);
+    } else {
+      xaiUrl.searchParams.set(key, value);
     }
   });
   return xaiUrl;

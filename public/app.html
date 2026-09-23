@@ -213,6 +213,15 @@
           <div class="field"><label for="newPassword" data-i18n="label.newPassword">New password</label><input id="newPassword" type="password" minlength="8" /></div>
           <button class="btn" type="submit" data-i18n="btn.changePassword">Change password</button>
         </form>
+        
+        <div class="passkey-section" id="passkeySection" style="margin-top:24px">
+          <p class="section-title" data-i18n="passkey.sectionTitle">Passkeys</p>
+          <p class="hint" data-i18n="passkey.sectionHint">Passkeys let you sign in with your device fingerprint, face, or screen lock — no password.</p>
+          <div id="passkeyList" class="passkey-list"></div>
+          <p class="hint" id="passkeyStatus" role="status" aria-live="polite"></p>
+          <button type="button" class="btn" id="addPasskeyBtn" data-i18n="passkey.add">Add a passkey</button>
+        </div>
+
         <p style="margin-top:24px"><button type="button" class="btn btn-danger" id="deleteAccountBtn" data-i18n="btn.deleteAccount">Delete account</button></p>
         <div class="legal-inline">
           <p class="section-title" data-i18n="legal.title">Legal</p>
@@ -325,7 +334,29 @@
       </div>
     </div>
   </div>
+  
+  <div id="passkeyPromptModal" class="modal-backdrop" hidden>
+    <div class="modal modal-confirm" role="dialog" aria-modal="true" aria-labelledby="passkeyPromptTitle" aria-describedby="passkeyPromptCopy">
+      <h2 id="passkeyPromptTitle" data-i18n="passkey.promptTitle">Set up a passkey?</h2>
+      <p id="passkeyPromptCopy" data-i18n="passkey.promptCopy">A passkey makes signing in faster and safer. You can set one up now, or later in Settings.</p>
+      <div class="modal-confirm-actions" style="flex-wrap:wrap;gap:8px">
+        <button type="button" class="btn btn-primary" id="passkeyPromptSetupBtn" data-i18n="passkey.promptSetup">Set up passkey</button>
+        <button type="button" class="btn" id="passkeyPromptNotNowBtn" data-i18n="passkey.promptNotNow">Not now</button>
+        <button type="button" class="btn btn-ghost" id="passkeyPromptDontAskBtn" data-i18n="passkey.promptDontAsk">Don’t ask again</button>
+      </div>
+    </div>
+  </div>
+  <div id="passkeyLaterModal" class="modal-backdrop" hidden>
+    <div class="modal modal-confirm" role="alertdialog" aria-modal="true" aria-labelledby="passkeyLaterTitle" aria-describedby="passkeyLaterCopy">
+      <h2 id="passkeyLaterTitle" data-i18n="passkey.laterTitle">Set up later in Settings</h2>
+      <p id="passkeyLaterCopy" data-i18n="passkey.laterCopy">You can add a passkey anytime under Settings → Account. We won’t ask again.</p>
+      <div class="modal-confirm-actions">
+        <button type="button" class="btn btn-primary" id="passkeyLaterOkBtn" data-i18n="passkey.laterOk">Got it</button>
+      </div>
+    </div>
+  </div>
   <div id="toast" class="toast" hidden></div>
+  <script src="/js/vendor/simplewebauthn-browser.js"></script>
   <script type="module" src="/js/app.js"></script>
 </body>
 </html>

@@ -436,6 +436,16 @@ const els = {
   localeCopy: document.getElementById("localeCopy"),
   localeChangeBtn: document.getElementById("localeChangeBtn"),
   localeKeepBtn: document.getElementById("localeKeepBtn"),
+  passkeySection: document.getElementById("passkeySection"),
+  passkeyList: document.getElementById("passkeyList"),
+  passkeyStatus: document.getElementById("passkeyStatus"),
+  addPasskeyBtn: document.getElementById("addPasskeyBtn"),
+  passkeyPromptModal: document.getElementById("passkeyPromptModal"),
+  passkeyPromptSetupBtn: document.getElementById("passkeyPromptSetupBtn"),
+  passkeyPromptNotNowBtn: document.getElementById("passkeyPromptNotNowBtn"),
+  passkeyPromptDontAskBtn: document.getElementById("passkeyPromptDontAskBtn"),
+  passkeyLaterModal: document.getElementById("passkeyLaterModal"),
+  passkeyLaterOkBtn: document.getElementById("passkeyLaterOkBtn"),
   continueCallBtn: document.getElementById("continueCallBtn"),
   confirmEndCallBtn: document.getElementById("confirmEndCallBtn"),
   transcript: document.getElementById("transcript"),
@@ -1619,6 +1629,7 @@ function refreshLocalizedChrome() {
   try { renderSessions(); } catch {}
   try { renderLive(agent.state); } catch {}
   try { renderBilling(); } catch {}
+  try { renderPasskeys(); } catch {}
 }
 
 async function applyUiLocale(code, { persist = true } = {}) {
@@ -1655,6 +1666,151 @@ function declineLocaleChange() {
   // Keep UI locale preference as-is; yourLanguage already updated for the call.
   closeLocaleModal();
 }
+
+
+/* ---- Passkeys ---- */
+let passkeysCache = [];
+let passkeyBusy = false;
+
+function formatPasskeyDate(value) {
+  try {
+    const d = value ? new Date(value) : null;
+    if (!d || Number.isNaN(d.getTime())) return "";
+    return d.toLocaleDateString(getLocale() || "en", { year: "numeric", month: "short", day: "numeric" });
+  } catch {
+    return "";
+  }
+}
+
+function renderPasskeys() {
+  if (!els.passkeyList) return;
+  if (!passkeysCache.length) {
+    els.passkeyList.innerHTML = `<p class="notice">${escapeHtml(t("passkey.empty"))}</p>`;
+    return;
+  }
+  els.passkeyList.innerHTML = `<ul class="passkey-items" style="list-style:none;padding:0;margin:0 0 12px">${passkeysCache
+    .map((pk) => {
+      const when = formatPasskeyDate(pk.createdAt);
+      const meta = when ? t("passkey.created", { date: when }) : "";
+      return `<li class="passkey-item" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--border, #333)">
+        <div>
+          <strong>${escapeHtml(pk.name || t("passkey.nameDefault"))}</strong>
+          ${meta ? `<div class="hint">${escapeHtml(meta)}</div>` : ""}
+        </div>
+        <button type="button" class="btn btn-small btn-danger" data-passkey-remove="${escapeHtml(pk.credentialId)}">${escapeHtml(t("passkey.remove"))}</button>
+      </li>`;
+    })
+    .join("")}</ul>`;
+}
+
+async function loadPasskeys() {
+  if (!els.passkeyList) return;
+  try {
+    passkeysCache = await api("/api/passkeys");
+    if (!Array.isArray(passkeysCache)) passkeysCache = [];
+    renderPasskeys();
+  } catch (error) {
+    if (els.passkeyStatus) els.passkeyStatus.textContent = error.message || t("passkey.loadFailed");
+  }
+}
+
+async function registerPasskey() {
+  if (passkeyBusy) return;
+  const startRegistration = window.SimpleWebAuthnBrowser?.startRegistration;
+  if (!startRegistration) {
+    toast(t("passkey.unavailable"), "error");
+    return;
+  }
+  passkeyBusy = true;
+  if (els.passkeyStatus) els.passkeyStatus.textContent = t("passkey.adding");
+  if (els.addPasskeyBtn) els.addPasskeyBtn.disabled = true;
+  try {
+    const options = await api("/api/passkeys/register-options", {
+      method: "POST",
+      body: "{}",
+    });
+    const credential = await startRegistration({ optionsJSON: options });
+    let name = t("passkey.nameDefault");
+    try {
+      const typed = window.prompt(t("passkey.namePrompt"), name);
+      if (typed && typed.trim()) name = typed.trim().slice(0, 60);
+    } catch {}
+    await api("/api/passkeys/register-verify", {
+      method: "POST",
+      body: JSON.stringify({ credential, name }),
+    });
+    toast(t("passkey.added"));
+    if (els.passkeyStatus) els.passkeyStatus.textContent = "";
+    await loadPasskeys();
+    if (profile) {
+      profile.passkeys = passkeysCache;
+    }
+  } catch (error) {
+    if (error?.name === "NotAllowedError" || error?.name === "AbortError") {
+      if (els.passkeyStatus) els.passkeyStatus.textContent = "";
+    } else {
+      toast(error.message || t("passkey.registerFailed"), "error");
+      if (els.passkeyStatus) els.passkeyStatus.textContent = error.message || t("passkey.registerFailed");
+    }
+  } finally {
+    passkeyBusy = false;
+    if (els.addPasskeyBtn) els.addPasskeyBtn.disabled = false;
+  }
+}
+
+async function removePasskey(credentialId) {
+  if (!credentialId || passkeyBusy) return;
+  if (!window.confirm(t("passkey.removeConfirm"))) return;
+  passkeyBusy = true;
+  try {
+    await api(`/api/passkeys/${encodeURIComponent(credentialId)}`, { method: "DELETE" });
+    toast(t("passkey.removed"));
+    await loadPasskeys();
+    if (profile) profile.passkeys = passkeysCache;
+  } catch (error) {
+    toast(error.message || t("passkey.removeFailed"), "error");
+  } finally {
+    passkeyBusy = false;
+  }
+}
+
+function closePasskeyPrompt() {
+  if (els.passkeyPromptModal) els.passkeyPromptModal.hidden = true;
+}
+
+function closePasskeyLater() {
+  if (els.passkeyLaterModal) els.passkeyLaterModal.hidden = true;
+}
+
+function openPasskeyLaterDialog() {
+  if (els.passkeyLaterModal) els.passkeyLaterModal.hidden = false;
+}
+
+function maybePromptPasskeySetup() {
+  if (!profile || !els.passkeyPromptModal) return;
+  const hasPasskeys = Array.isArray(profile.passkeys) && profile.passkeys.length > 0;
+  if (hasPasskeys) return;
+  if (profile.passkeyPromptDismissed) return;
+  try {
+    const uid = profile._id || profile.id;
+    if (uid && localStorage.getItem(`callandtranslate.passkeyPromptDismissed.${uid}`) === "1") return;
+  } catch {}
+  els.passkeyPromptModal.hidden = false;
+}
+
+async function dismissPasskeyPromptPermanently() {
+  closePasskeyPrompt();
+  try {
+    await api("/api/passkeys/dismiss-prompt", { method: "POST", body: "{}" });
+    if (profile) profile.passkeyPromptDismissed = true;
+  } catch {}
+  try {
+    const uid = profile?._id || profile?.id;
+    if (uid) localStorage.setItem(`callandtranslate.passkeyPromptDismissed.${uid}`, "1");
+  } catch {}
+  openPasskeyLaterDialog();
+}
+
 
 async function boot() {
   const ok = await ensureValidSession();
@@ -1702,6 +1858,8 @@ async function boot() {
   ]);
   fillVoices();
   renderLive(agent.state);
+  await loadPasskeys();
+  maybePromptPasskeySetup();
 }
 
 
@@ -1798,14 +1956,14 @@ els.logoutBtn.addEventListener("click", async () => {
 });
 els.settingsBtn.addEventListener("click", async () => {
   els.settingsModal.hidden = false;
-  await Promise.all([refreshBilling(), loadCreditsDetails()]);
+  await Promise.all([refreshBilling(), loadCreditsDetails(), loadPasskeys()]);
 });
 els.closeSettings.addEventListener("click", () => {
   els.settingsModal.hidden = true;
 });
 els.creditPill.addEventListener("click", async () => {
   els.settingsModal.hidden = false;
-  await Promise.all([refreshBilling(), loadCreditsDetails()]);
+  await Promise.all([refreshBilling(), loadCreditsDetails(), loadPasskeys()]);
 });
 document.querySelectorAll(".tab").forEach((tab) => {
   tab.addEventListener("click", () => {
@@ -1903,6 +2061,35 @@ els.deleteAccountBtn.addEventListener("click", async () => {
 
 initBrandSelects();
 initPaneResize();
+
+els.addPasskeyBtn?.addEventListener("click", () => {
+  registerPasskey();
+});
+els.passkeyList?.addEventListener("click", (event) => {
+  const btn = event.target?.closest?.("[data-passkey-remove]");
+  if (!btn) return;
+  removePasskey(btn.getAttribute("data-passkey-remove"));
+});
+els.passkeyPromptSetupBtn?.addEventListener("click", async () => {
+  closePasskeyPrompt();
+  await registerPasskey();
+});
+els.passkeyPromptNotNowBtn?.addEventListener("click", () => {
+  closePasskeyPrompt();
+});
+els.passkeyPromptDontAskBtn?.addEventListener("click", () => {
+  dismissPasskeyPromptPermanently();
+});
+els.passkeyLaterOkBtn?.addEventListener("click", () => {
+  closePasskeyLater();
+});
+els.passkeyPromptModal?.addEventListener("click", (event) => {
+  if (event.target === els.passkeyPromptModal) closePasskeyPrompt();
+});
+els.passkeyLaterModal?.addEventListener("click", (event) => {
+  if (event.target === els.passkeyLaterModal) closePasskeyLater();
+});
+
 initI18n(readStoredLocale()).then(() => boot()).catch((error) => {
   console.error(error);
   toast(error.message || t("toast.appLoadFailed"), "error");

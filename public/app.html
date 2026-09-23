@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-i18n-title-key="app.title">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -17,117 +17,117 @@
   <header class="app-top">
     <a class="wordmark" href="/app.html">Call <span>&amp;</span> Translate</a>
     <div class="app-top-actions">
-      <button type="button" class="credit-pill" id="creditPill" title="Call time and plan">
+      <button type="button" class="credit-pill" id="creditPill" title="Call time and plan" data-i18n-title="nav.creditPillTitle">
         <span id="planLabel">Free</span>
         <strong id="creditBalance">0s</strong>
       </button>
-      <a class="btn btn-small btn-ghost" href="/about.html">About</a>
-      <a class="btn btn-small btn-ghost" id="adminLink" href="/admin" hidden>Admin</a>
+      <a class="btn btn-small btn-ghost" href="/about.html" data-i18n="nav.about">About</a>
+      <a class="btn btn-small btn-ghost" id="adminLink" href="/admin" hidden data-i18n="nav.admin">Admin</a>
       <div class="theme-menu" data-theme-menu></div>
-      <button type="button" class="btn btn-small" id="settingsBtn">Settings</button>
-      <button type="button" class="btn btn-small btn-ghost" id="logoutBtn">Log out</button>
+      <button type="button" class="btn btn-small" id="settingsBtn" data-i18n="nav.settings">Settings</button>
+      <button type="button" class="btn btn-small btn-ghost" id="logoutBtn" data-i18n="nav.logout">Log out</button>
     </div>
   </header>
   <main class="app-main">
-    <section class="brief-pane" aria-label="Call brief">
-      <p class="section-title">Call brief</p>
-      <p class="hint">What you need done, the facts they will ask for, and the answers you want back.</p>
+    <section class="brief-pane" aria-label="Call brief" data-i18n-aria-label="brief.aria">
+      <p class="section-title" data-i18n="brief.title">Call brief</p>
+      <p class="hint" data-i18n="brief.hint">What you need done, the facts they will ask for, and the answers you want back.</p>
       <div class="toolbar" id="templateToolbar"></div>
       <div class="lang-row">
         <div class="field">
-          <label for="yourLanguage">You speak</label>
+          <label for="yourLanguage" data-i18n="label.yourLanguage">You speak</label>
           <select id="yourLanguage"></select>
         </div>
         <div class="field">
-          <label for="theirLanguage">They speak</label>
+          <label for="theirLanguage" data-i18n="label.theirLanguage">They speak</label>
           <select id="theirLanguage"></select>
         </div>
       </div>
       <div class="lang-row">
         <div class="field">
-          <label for="yourName">Your name</label>
+          <label for="yourName" data-i18n="label.yourName">Your name</label>
           <input
             id="yourName"
             type="text"
             maxlength="80"
             autocomplete="name"
-            placeholder="Ada Lovelace"
+            placeholder="Ada Lovelace" data-i18n-placeholder="ph.yourName"
           />
         </div>
         <div class="field">
-          <label for="voiceSelect">Agent voice</label>
+          <label for="voiceSelect" data-i18n="label.voiceSelect">Agent voice</label>
           <div class="voice-field-controls">
             <select id="voiceSelect"></select>
-            <button type="button" class="btn btn-icon" id="previewVoice" title="Preview voice">▶</button>
+            <button type="button" class="btn btn-icon" id="previewVoice" title="Preview voice" data-i18n-title="title.previewVoice">▶</button>
           </div>
         </div>
       </div>
       <div class="fill-brief" id="fillBrief">
-        <p class="section-title">Dictate and fill</p>
-        <p class="hint">Speak or type what you need done. When you stop, the words appear here so you can edit them. Then fill the brief — we’ll ask for any details the other side is likely to need.</p>
+        <p class="section-title" data-i18n="fill.title">Dictate and fill</p>
+        <p class="hint" data-i18n="fill.hint">Speak or type what you need done. When you stop, the words appear here so you can edit them. Then fill the brief — we’ll ask for any details the other side is likely to need.</p>
         <div class="field">
-          <label for="fillNotes">What should this call do?</label>
+          <label for="fillNotes" data-i18n="label.fillNotes">What should this call do?</label>
           <div class="dictate-notes-wrap" id="fillNotesWrap">
-            <textarea id="fillNotes" placeholder="Extend the hotel stay two nights under Ada Lovelace, booking 4419, and get the new total plus a confirmation email."></textarea>
+            <textarea id="fillNotes" placeholder="Extend the hotel stay two nights under Ada Lovelace, booking 4419, and get the new total plus a confirmation email." data-i18n-placeholder="ph.fillNotes"></textarea>
             <div class="dictate-notes-working" id="fillNotesWorking" hidden>
               <span class="working-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-              <span>Transcribing…</span>
+              <span data-i18n="fill.transcribingEllipsis">Transcribing…</span>
             </div>
           </div>
         </div>
         <div class="fill-brief-actions">
-          <button type="button" class="btn dictate-btn" id="dictateBtn" aria-pressed="false" aria-label="Dictate">
+          <button type="button" class="btn dictate-btn" id="dictateBtn" aria-pressed="false" aria-label="Dictate" data-i18n-aria-label="aria.dictate">
             <span class="dictate-idle" id="dictateIdle">
               <svg class="dictate-mic" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
                 <path fill="currentColor" d="M12 14a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/>
               </svg>
-              <span class="dictate-label">Dictate</span>
+              <span class="dictate-label" data-i18n="btn.dictate">Dictate</span>
             </span>
             <span class="dictate-live" id="dictateLive" hidden>
               <span class="dictate-wave" id="dictateWave"></span>
               <span class="dictate-live-side">
                 <span class="dictate-timer" id="dictateTimer">0:00</span>
                 <span class="dictate-stop" aria-hidden="true"></span>
-                <span class="dictate-label">Stop</span>
+                <span class="dictate-label" data-i18n="btn.stop">Stop</span>
               </span>
             </span>
             <span class="dictate-working" id="dictateWorking" hidden>
               <span class="working-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-              <span class="dictate-label">Transcribing</span>
+              <span class="dictate-label" data-i18n="btn.transcribing">Transcribing</span>
             </span>
           </button>
           <button type="button" class="btn btn-primary fill-brief-btn" id="fillBriefBtn">
-            <span class="fill-idle" id="fillIdle">Fill the brief</span>
+            <span class="fill-idle" id="fillIdle" data-i18n="btn.fillBrief">Fill the brief</span>
             <span class="fill-working" id="fillWorking" hidden>
               <span class="working-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-              <span>Filling brief…</span>
+              <span data-i18n="btn.fillingBrief">Filling brief…</span>
             </span>
           </button>
         </div>
         <p class="hint" id="dictateStatus" role="status" aria-live="polite"></p>
-        <p class="notice warn">
+        <p class="notice warn" data-i18n="fill.creditNotice">
           Dictation uses some of your remaining call time for speech-to-text. Filling the brief uses a little more for Grok. You will see how much was deducted after each step.
         </p>
       </div>
       <div class="field">
-        <label for="goal">What you need done</label>
-        <textarea id="goal" placeholder="Extend the hotel stay by two nights, confirm the new total, and get a written confirmation."></textarea>
+        <label for="goal" data-i18n="label.goal">What you need done</label>
+        <textarea id="goal" placeholder="Extend the hotel stay by two nights, confirm the new total, and get a written confirmation." data-i18n-placeholder="ph.goal"></textarea>
       </div>
       <div class="field">
-        <label for="rules">How to handle the call</label>
-        <textarea id="rules" placeholder="You are calling on behalf of… Be concise. If they ask for something you don’t have, check with me on speaker."></textarea>
+        <label for="rules" data-i18n="label.rules">How to handle the call</label>
+        <textarea id="rules" placeholder="You are calling on behalf of… Be concise. If they ask for something you don’t have, check with me on speaker." data-i18n-placeholder="ph.rules"></textarea>
       </div>
       <div class="field">
-        <label for="information">Facts for the call</label>
-        <textarea id="information" placeholder="Name, dates, booking or account numbers — and the questions you need answered: price, hours, confirmation number…"></textarea>
+        <label for="information" data-i18n="label.information">Facts for the call</label>
+        <textarea id="information" placeholder="Name, dates, booking or account numbers — and the questions you need answered: price, hours, confirmation number…" data-i18n-placeholder="ph.information"></textarea>
       </div>
-      <p class="hint">Include what the other side will ask for, and what you want to find out.</p>
+      <p class="hint" data-i18n="brief.factsHint">Include what the other side will ask for, and what you want to find out.</p>
       <label class="check-row">
         <input type="checkbox" id="discloseAi" checked />
-        <span>Tell the other person an AI assistant is on speakerphone with you.</span>
+        <span data-i18n="label.discloseAi">Tell the other person an AI assistant is on speakerphone with you.</span>
       </label>
       <details>
-        <summary>Advanced prompt</summary>
+        <summary data-i18n="brief.advancedPrompt">Advanced prompt</summary>
         <div class="field" style="margin-top:10px">
           <textarea id="prompt" rows="10"></textarea>
         </div>
@@ -138,30 +138,30 @@
       id="paneResizer"
       role="separator"
       aria-orientation="vertical"
-      aria-label="Resize call brief panel"
+      aria-label="Resize call brief panel" data-i18n-aria-label="aria.resizeBrief"
       aria-valuemin="260"
       aria-valuemax="720"
       aria-valuenow="380"
       tabindex="0"
     ></div>
-    <section class="live-pane" id="livePane" aria-label="Live call">
+    <section class="live-pane" id="livePane" aria-label="Live call" data-i18n-aria-label="live.aria">
       <div class="live-header">
         <div>
-          <p class="section-title">Live call</p>
+          <p class="section-title" data-i18n="live.title">Live call</p>
           <div class="status-live">
             <span class="status-dot" id="statusDot"></span>
-            <span id="statusLabel">Idle</span>
+            <span id="statusLabel" data-i18n="status.idle">Idle</span>
           </div>
         </div>
         <div class="duration" id="durationLabel">0:00</div>
         <div class="live-controls">
-          <button type="button" class="btn" id="checkMicBtn">Check mic</button>
-          <button type="button" class="btn btn-primary" id="startBtn">Start</button>
-          <button type="button" class="btn" id="pauseBtn" disabled aria-pressed="false" title="Pause the agent without ending the call">Pause</button>
-          <button type="button" class="btn btn-danger" id="stopBtn" disabled aria-haspopup="dialog">End call</button>
+          <button type="button" class="btn" id="checkMicBtn" data-i18n="btn.checkMic">Check mic</button>
+          <button type="button" class="btn btn-primary" id="startBtn" data-i18n="btn.start">Start</button>
+          <button type="button" class="btn" id="pauseBtn" disabled aria-pressed="false" title="Pause the agent without ending the call" data-i18n-title="title.pause" data-i18n="btn.pause">Pause</button>
+          <button type="button" class="btn btn-danger" id="stopBtn" disabled aria-haspopup="dialog" data-i18n="btn.endCall">End call</button>
         </div>
       </div>
-      <p class="disclosure">
+      <p class="disclosure" data-i18n="live.disclosure">
         Put the phone on speaker so you, the agent, and the other person can all hear each other. Follow the live transcript in your language. Jump in to correct or add a question. If they ask for something that is not in the brief, the agent will check with you.
       </p>
       <div class="stage">
@@ -170,58 +170,58 @@
       </div>
       <div class="summary" id="summaryPanel">
         <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
-          <h3>Call report</h3>
-          <button type="button" class="btn btn-small" id="summarizeBtn" disabled>Write report</button>
+          <h3 data-i18n="report.title">Call report</h3>
+          <button type="button" class="btn btn-small" id="summarizeBtn" disabled data-i18n="btn.writeReport">Write report</button>
         </div>
-        <div class="summary-body" id="summaryBody">No report yet. End a call, then write what was said, what was done, what was captured, and anything still outstanding.</div>
+        <div class="summary-body" id="summaryBody" data-i18n="report.empty">No report yet. End a call, then write what was said, what was done, what was captured, and anything still outstanding.</div>
       </div>
     </section>
   </main>
   <div id="settingsModal" class="modal-backdrop" hidden>
     <div class="modal" role="dialog" aria-labelledby="settingsTitle">
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <h2 id="settingsTitle" style="font-family:var(--display);margin:0">Settings</h2>
-        <button type="button" class="btn btn-ghost" id="closeSettings">Close</button>
+        <h2 id="settingsTitle" style="font-family:var(--display);margin:0" data-i18n="settings.title">Settings</h2>
+        <button type="button" class="btn btn-ghost" id="closeSettings" data-i18n="btn.close">Close</button>
       </div>
       <div class="tabs">
-        <button type="button" class="tab active" data-tab="credits">Call time</button>
-        <button type="button" class="tab" data-tab="plan">Plan</button>
-        <button type="button" class="tab" data-tab="account">Account</button>
+        <button type="button" class="tab active" data-tab="credits" data-i18n="tab.credits">Call time</button>
+        <button type="button" class="tab" data-tab="plan" data-i18n="tab.plan">Plan</button>
+        <button type="button" class="tab" data-tab="account" data-i18n="tab.account">Account</button>
       </div>
       <div data-pane="credits">
-        <p>Remaining: <strong id="settingsBalance">0s</strong></p>
+        <p><span data-i18n="credits.remaining">Remaining:</span> <strong id="settingsBalance">0s</strong></p>
         <div id="creditLots"></div>
         <div id="usageTableWrap"></div>
       </div>
       <div data-pane="plan" hidden>
         <p id="planCopy"></p>
         <div class="toolbar">
-          <button type="button" class="btn btn-primary" id="upgradeBtn">Upgrade to Paid</button>
-          <button type="button" class="btn" id="portalBtn">Manage billing</button>
-          <button type="button" class="btn btn-danger" id="cancelBtn">Cancel at period end</button>
-          <button type="button" class="btn" id="reactivateBtn">Keep Paid</button>
+          <button type="button" class="btn btn-primary" id="upgradeBtn" data-i18n="btn.upgrade">Upgrade to Paid</button>
+          <button type="button" class="btn" id="portalBtn" data-i18n="btn.manageBilling">Manage billing</button>
+          <button type="button" class="btn btn-danger" id="cancelBtn" data-i18n="btn.cancelPeriod">Cancel at period end</button>
+          <button type="button" class="btn" id="reactivateBtn" data-i18n="btn.keepPaid">Keep Paid</button>
         </div>
         <p class="notice" id="planStatus" hidden></p>
       </div>
       <div data-pane="account" hidden>
         <form id="nameForm">
-          <div class="field"><label for="accountName">Name</label><input id="accountName" maxlength="50" /></div>
-          <button class="btn" type="submit">Save name</button>
+          <div class="field"><label for="accountName" data-i18n="label.accountName">Name</label><input id="accountName" maxlength="50" /></div>
+          <button class="btn" type="submit" data-i18n="btn.saveName">Save name</button>
         </form>
         <form id="passwordForm" style="margin-top:16px">
-          <div class="field"><label for="currentPassword">Current password</label><input id="currentPassword" type="password" /></div>
-          <div class="field"><label for="newPassword">New password</label><input id="newPassword" type="password" minlength="8" /></div>
-          <button class="btn" type="submit">Change password</button>
+          <div class="field"><label for="currentPassword" data-i18n="label.currentPassword">Current password</label><input id="currentPassword" type="password" /></div>
+          <div class="field"><label for="newPassword" data-i18n="label.newPassword">New password</label><input id="newPassword" type="password" minlength="8" /></div>
+          <button class="btn" type="submit" data-i18n="btn.changePassword">Change password</button>
         </form>
-        <p style="margin-top:24px"><button type="button" class="btn btn-danger" id="deleteAccountBtn">Delete account</button></p>
+        <p style="margin-top:24px"><button type="button" class="btn btn-danger" id="deleteAccountBtn" data-i18n="btn.deleteAccount">Delete account</button></p>
         <div class="legal-inline">
-          <p class="section-title">Legal</p>
-          <nav class="site-footer-links" aria-label="Legal">
-            <a href="/privacy">Privacy</a>
-            <a href="/cookies">Cookies</a>
-            <a href="/terms">Terms</a>
-            <a href="/acceptable-use">Acceptable use</a>
-            <button type="button" data-cookie-settings>Cookie settings</button>
+          <p class="section-title" data-i18n="legal.title">Legal</p>
+          <nav class="site-footer-links" aria-label="Legal" data-i18n-aria-label="legal.aria">
+            <a href="/privacy" data-i18n="legal.privacy">Privacy</a>
+            <a href="/cookies" data-i18n="legal.cookies">Cookies</a>
+            <a href="/terms" data-i18n="legal.terms">Terms</a>
+            <a href="/acceptable-use" data-i18n="legal.acceptableUse">Acceptable use</a>
+            <button type="button" data-cookie-settings data-i18n="legal.cookieSettings">Cookie settings</button>
           </nav>
         </div>
       </div>
@@ -229,11 +229,11 @@
   </div>
   <div id="endCallModal" class="modal-backdrop" hidden>
     <div class="modal modal-confirm" role="alertdialog" aria-modal="true" aria-labelledby="endCallTitle" aria-describedby="endCallCopy">
-      <h2 id="endCallTitle">End this call?</h2>
-      <p id="endCallCopy">The agent will hang up and the session will close. Pause if you only need the agent to stay quiet.</p>
+      <h2 id="endCallTitle" data-i18n="endCall.title">End this call?</h2>
+      <p id="endCallCopy" data-i18n="endCall.copy">The agent will hang up and the session will close. Pause if you only need the agent to stay quiet.</p>
       <div class="modal-confirm-actions">
-        <button type="button" class="btn" id="continueCallBtn">Continue call</button>
-        <button type="button" class="btn btn-danger" id="confirmEndCallBtn">End call</button>
+        <button type="button" class="btn" id="continueCallBtn" data-i18n="btn.continueCall">Continue call</button>
+        <button type="button" class="btn btn-danger" id="confirmEndCallBtn" data-i18n="btn.endCall">End call</button>
       </div>
     </div>
   </div>
@@ -246,71 +246,82 @@
       aria-describedby="followUpLead"
     >
       <div class="follow-up-head">
-        <p class="follow-up-kicker" id="followUpKicker">Before you call</p>
-        <h2 id="followUpTitle">They’ll likely ask for more</h2>
+        <p class="follow-up-kicker" id="followUpKicker" data-i18n="followUp.kicker">Before you call</p>
+        <h2 id="followUpTitle" data-i18n="followUp.title">They’ll likely ask for more</h2>
         <p class="follow-up-calling" id="followUpCalling" hidden></p>
-        <p class="follow-up-lead" id="followUpLead">
+        <p class="follow-up-lead" id="followUpLead" data-i18n="followUp.lead">
           The system thinks the person, business, or office you’re calling will ask for a few details that aren’t in what you said yet. The agent will be speaking on your behalf. Add them below, dictate, or skip this step and deal with it on the call when asked.
         </p>
-        <p class="notice ok follow-up-tip">
+        <p class="notice ok follow-up-tip" data-i18n="followUp.tip">
           The more information you give the agent now, the smoother this will go — and the shorter the call.
         </p>
       </div>
       <div class="follow-up-body">
       <div class="follow-up-questions" id="followUpQuestions"></div>
       <div class="field follow-up-spoken-field">
-        <label for="followUpSpoken">Or say it in your own words</label>
+        <label for="followUpSpoken" data-i18n="label.followUpSpoken">Or say it in your own words</label>
         <div class="dictate-notes-wrap" id="followUpSpokenWrap">
           <textarea
             id="followUpSpoken"
-            placeholder="Dictate or type anything else the agent should know."
+            placeholder="Dictate or type anything else the agent should know." data-i18n-placeholder="ph.followUpSpoken"
           ></textarea>
           <div class="dictate-notes-working" id="followUpSpokenWorking" hidden>
             <span class="working-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-            <span>Transcribing…</span>
+            <span data-i18n="fill.transcribingEllipsis">Transcribing…</span>
           </div>
         </div>
       </div>
       </div>
       <div class="follow-up-footer">
       <div class="follow-up-actions">
-        <button type="button" class="btn dictate-btn" id="followUpDictateBtn" aria-pressed="false" aria-label="Dictate answers">
+        <button type="button" class="btn dictate-btn" id="followUpDictateBtn" aria-pressed="false" aria-label="Dictate answers" data-i18n-aria-label="aria.dictateAnswers">
           <span class="dictate-idle" id="followUpDictateIdle">
             <svg class="dictate-mic" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
               <path fill="currentColor" d="M12 14a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/>
             </svg>
-            <span class="dictate-label">Dictate</span>
+            <span class="dictate-label" data-i18n="btn.dictate">Dictate</span>
           </span>
           <span class="dictate-live" id="followUpDictateLive" hidden>
             <span class="dictate-wave" id="followUpDictateWave"></span>
             <span class="dictate-live-side">
               <span class="dictate-timer" id="followUpDictateTimer">0:00</span>
               <span class="dictate-stop" aria-hidden="true"></span>
-              <span class="dictate-label">Stop</span>
+              <span class="dictate-label" data-i18n="btn.stop">Stop</span>
             </span>
           </span>
           <span class="dictate-working" id="followUpDictateWorking" hidden>
             <span class="working-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-            <span class="dictate-label">Transcribing</span>
+            <span class="dictate-label" data-i18n="btn.transcribing">Transcribing</span>
           </span>
         </button>
         <div class="follow-up-actions-end">
-          <button type="button" class="btn btn-ghost" id="followUpSkipBtn">
+          <button type="button" class="btn btn-ghost" id="followUpSkipBtn" data-i18n="btn.skipFollowUp">
             Skip — I’ll deal with it on the call
           </button>
           <button type="button" class="btn btn-primary" id="followUpApplyBtn">
-            <span class="fill-idle" id="followUpApplyIdle">Add to the brief</span>
+            <span class="fill-idle" id="followUpApplyIdle" data-i18n="btn.addToBrief">Add to the brief</span>
             <span class="fill-working" id="followUpApplyWorking" hidden>
               <span class="working-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-              <span>Adding…</span>
+              <span data-i18n="btn.adding">Adding…</span>
             </span>
           </button>
         </div>
       </div>
       <p class="hint" id="followUpStatus" role="status" aria-live="polite"></p>
-      <p class="notice warn follow-up-credit">
+      <p class="notice warn follow-up-credit" data-i18n="followUp.creditNotice">
         Dictation uses some of your remaining call time for speech-to-text. Adding answers uses a little more for Grok.
       </p>
+      </div>
+    </div>
+  </div>
+  
+  <div id="localeModal" class="modal-backdrop" hidden>
+    <div class="modal modal-confirm" role="alertdialog" aria-modal="true" aria-labelledby="localeTitle" aria-describedby="localeCopy">
+      <h2 id="localeTitle" data-i18n="locale.dialogTitle">Change app language?</h2>
+      <p id="localeCopy">You changed “You speak” to {language}. Do you also want the app interface to use {language}?</p>
+      <div class="modal-confirm-actions">
+        <button type="button" class="btn" id="localeKeepBtn" data-i18n="locale.dialogNo">No, keep current language</button>
+        <button type="button" class="btn btn-primary" id="localeChangeBtn" data-i18n="locale.dialogYes">Yes, change app language</button>
       </div>
     </div>
   </div>

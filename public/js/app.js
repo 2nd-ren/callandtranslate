@@ -15,6 +15,7 @@ import {
 } from "./sttTranscript.js";
 import WaveSurfer from "./vendor/wavesurfer.esm.js";
 import RecordPlugin from "./vendor/wavesurfer.record.esm.js";
+import { t, setLocale, getLocale, initI18n, applyTranslations, onLocaleChange, readStoredLocale, hasStoredLocale, normalizeLanguageCode } from "./i18n.js";
 
 const apiBase = () => String(AppConfig?.apiBaseUrl || "").replace(/\/+$/, "");
 
@@ -35,7 +36,7 @@ async function api(path, options = {}) {
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const err = new Error(data.error || data.message || "Request failed.");
+    const err = new Error(data.error || data.message || t("toast.requestFailed"));
     err.status = response.status;
     err.data = data;
     throw err;
@@ -126,7 +127,7 @@ function brandSelectMarkup({ id, label, value, items, emptyText }) {
           }">${escapeHtml(item.label)}</button>`;
         })
         .join("")
-    : `<p class="brand-select-empty">${escapeHtml(emptyText || "Nothing saved yet")}</p>`;
+    : `<p class="brand-select-empty">${escapeHtml(emptyText || t("brandSelect.nothing"))}</p>`;
   const nativeOptions = [
     `<option value="">${escapeHtml(label)}</option>`,
     ...items.map(
@@ -431,6 +432,10 @@ const els = {
   stopBtn: document.getElementById("stopBtn"),
   pauseBtn: document.getElementById("pauseBtn"),
   endCallModal: document.getElementById("endCallModal"),
+  localeModal: document.getElementById("localeModal"),
+  localeCopy: document.getElementById("localeCopy"),
+  localeChangeBtn: document.getElementById("localeChangeBtn"),
+  localeKeepBtn: document.getElementById("localeKeepBtn"),
   continueCallBtn: document.getElementById("continueCallBtn"),
   confirmEndCallBtn: document.getElementById("confirmEndCallBtn"),
   transcript: document.getElementById("transcript"),
@@ -528,20 +533,20 @@ function renderTemplates() {
   closeBrandSelects();
   const items = templates.map((row) => ({
     value: String(row.templateId || row._id),
-    label: row.name || "Untitled template",
+    label: row.name || t("templates.untitled"),
   }));
   els.templateToolbar.innerHTML = `
     ${brandSelectMarkup({
       id: "templateSelect",
-      label: "Templates",
+      label: t("templates.label"),
       value: selectedTemplateId,
       items,
-      emptyText: "No templates yet",
+      emptyText: t("templates.empty"),
     })}
-    <button type="button" class="btn btn-small" data-tpl="load">Load</button>
-    <button type="button" class="btn btn-small" data-tpl="save">Save</button>
-    <button type="button" class="btn btn-small" data-tpl="saveas">Save as</button>
-    <button type="button" class="btn btn-small" data-tpl="delete">Delete</button>
+    <button type="button" class="btn btn-small" data-tpl="load">${t("btn.load")}</button>
+    <button type="button" class="btn btn-small" data-tpl="save">${t("btn.save")}</button>
+    <button type="button" class="btn btn-small" data-tpl="saveas">${t("btn.saveAs")}</button>
+    <button type="button" class="btn btn-small" data-tpl="delete">${t("btn.delete")}</button>
   `;
   const root = els.templateToolbar.querySelector("[data-brand-select]");
   if (root) {
@@ -560,18 +565,18 @@ function renderSessions() {
   closeBrandSelects();
   const items = sessions.map((row) => ({
     value: String(row.sessionId || row._id),
-    label: row.name || "Untitled session",
+    label: row.name || t("sessions.untitled"),
   }));
   els.sessionToolbar.innerHTML = `
     ${brandSelectMarkup({
       id: "sessionSelect",
-      label: "Saved sessions",
+      label: t("sessions.label"),
       value: selectedSessionId,
       items,
-      emptyText: "No saved sessions yet",
+      emptyText: t("sessions.empty"),
     })}
-    <button type="button" class="btn btn-small" data-sess="open">Open</button>
-    <button type="button" class="btn btn-small" data-sess="save">Save session</button>
+    <button type="button" class="btn btn-small" data-sess="open">${t("btn.open")}</button>
+    <button type="button" class="btn btn-small" data-sess="save">${t("btn.saveSession")}</button>
   `;
   const root = els.sessionToolbar.querySelector("[data-brand-select]");
   if (root) {
@@ -600,7 +605,7 @@ async function onTemplateAction(action) {
         (row) => String(row.templateId || row._id) === String(selectedTemplateId),
       )?.name;
       if (action === "saveas" || !selectedTemplateId) {
-        name = window.prompt("Template name", name || "Call template");
+        name = window.prompt(t("prompt.templateName"), name || t("prompt.templateNameDefault"));
         if (!name) return;
       }
       const body = JSON.stringify({ name, fields: agent.fields() });
@@ -616,7 +621,7 @@ async function onTemplateAction(action) {
       toast(`Saved ${data.template.name}`);
     } else if (action === "delete") {
       if (!selectedTemplateId) return;
-      if (!window.confirm("Delete this template?")) return;
+      if (!window.confirm(t("confirm.deleteTemplate"))) return;
       await api(`/api/call-agent/templates/${selectedTemplateId}`, { method: "DELETE" });
       selectedTemplateId = "";
       await loadTemplates();
@@ -646,7 +651,7 @@ async function onSessionAction(action) {
       syncFieldsFromDom();
       await agent.saveSession();
       await loadSessions();
-      toast("Session saved");
+      toast(t("toast.sessionSaved"));
     }
   } catch (error) {
     toast(error.message, "error");
@@ -699,10 +704,10 @@ function getDictateSurface() {
       setStatus: setFollowUpStatus,
       transcribedStatus: (used) =>
         used
-          ? `Transcribed · used ${used} of call time. Add it to a question or keep it here.`
+          ? t("dictate.followUpTranscribedWithUsed", { used })
           : "Review the text, then add it to the brief.",
       transcribeErrorStatus:
-        "Could not transcribe. Type an answer, or dictate again.",
+        t("dictate.followUpTranscribeError"),
       awaitingBtn: null,
     };
   }
@@ -721,10 +726,10 @@ function getDictateSurface() {
     setStatus: setDictateStatus,
     transcribedStatus: (used) =>
       used
-        ? `Transcribed · used ${used} of call time. Edit if you need to, then fill the brief.`
+        ? t("dictate.transcribedWithUsed", { used })
         : "Review the text, then fill the brief.",
     transcribeErrorStatus:
-      "Could not transcribe. Edit or type the notes, then fill the brief — or dictate again.",
+      t("dictate.transcribeError"),
     awaitingBtn: els.fillBriefBtn,
   };
 }
@@ -748,7 +753,7 @@ function blobToBase64(blob) {
       const comma = result.indexOf(",");
       resolve(comma >= 0 ? result.slice(comma + 1) : result);
     };
-    reader.onerror = () => reject(new Error("Could not read the recording."));
+    reader.onerror = () => reject(new Error(t("call.readRecordingFailed")));
     reader.readAsDataURL(blob);
   });
 }
@@ -869,7 +874,7 @@ function setDictateUi(mode) {
   ui.btn.setAttribute("aria-pressed", recording ? "true" : "false");
   ui.btn.setAttribute(
     "aria-label",
-    recording ? "Stop dictation" : working ? "Transcribing" : "Dictate",
+    recording ? t("aria.stopDictation") : working ? t("btn.transcribing") : t("aria.dictate"),
   );
   ui.btn.setAttribute("aria-busy", working ? "true" : "false");
   if (ui.idle) ui.idle.hidden = mode !== "idle";
@@ -945,7 +950,7 @@ async function startWaveSurferDictation() {
   const ui = getDictateSurface();
   const container = ui.wave;
   if (!container || !WaveSurfer || !RecordPlugin) {
-    throw new Error("Waveform is not available.");
+    throw new Error(t("call.waveformUnavailable"));
   }
   container.innerHTML = "";
   await nextFrame();
@@ -1000,7 +1005,7 @@ async function startMediaRecorderDictation() {
     dictateRecorder = null;
     setDictateUi("idle");
     getDictateSurface().setStatus("");
-    toast("Dictation failed. Try again, or type the notes.", "error");
+    toast(t("toast.dictationFailed"), "error");
   };
   dictateRecorder.start();
 }
@@ -1015,7 +1020,7 @@ async function startDictation() {
   setDictateUi("recording");
   startDictateTimer();
   showFallbackWave();
-  ui.setStatus("Listening — tap to stop.");
+  ui.setStatus(t("dictate.listening"));
   try {
     await startWaveSurferDictation();
   } catch {
@@ -1076,7 +1081,7 @@ function stopMediaRecorder() {
 async function stopDictation() {
   transcribeInFlight = true;
   setDictateUi("working");
-  getDictateSurface().setStatus("Transcribing what you said…");
+  getDictateSurface().setStatus(t("dictate.transcribing"));
   let blob = null;
   try {
     if (dictateRecord?.isRecording?.()) {
@@ -1103,8 +1108,8 @@ async function handleRecordedBlob(blob) {
   if (!dictateBlob) {
     transcribeInFlight = false;
     setDictateUi("idle");
-    ui.setStatus("No audio captured. Try again, or type the notes.");
-    toast("Nothing was recorded. Try dictation again.", "error");
+    ui.setStatus(t("dictate.noAudio"));
+    toast(t("toast.nothingRecorded"), "error");
     return;
   }
   try {
@@ -1127,7 +1132,7 @@ async function handleRecordedBlob(blob) {
     const used = data.creditsDeductedLabel || "";
     ui.setStatus(ui.transcribedStatus(used));
   } catch (error) {
-    toast(error.message || "Could not transcribe that recording.", "error");
+    toast(error.message || t("toast.transcribeFailed"), "error");
     ui.setStatus(ui.transcribeErrorStatus);
     await refreshBilling().catch(() => {});
   } finally {
@@ -1148,7 +1153,7 @@ async function toggleDictation(surface = "brief") {
   if (surface === "brief" && isFollowUpOpen()) return;
   activeDictateSurface = surface;
   if (!window.MediaRecorder && !navigator.mediaDevices?.getUserMedia) {
-    toast("This browser cannot record audio. Type the notes instead.", "error");
+    toast(t("toast.noRecorder"), "error");
     return;
   }
   try {
@@ -1210,8 +1215,8 @@ function renderFollowUpQuestions(followUps) {
           </div>
         </header>
         <div class="field">
-          <label for="followUpAnswer-${index}">Your answer</label>
-          <textarea id="followUpAnswer-${index}" data-follow-up-answer rows="2" placeholder="Type it, dictate it, or leave blank to skip this one."></textarea>
+          <label for="followUpAnswer-${index}">${t("label.yourAnswer")}</label>
+          <textarea id="followUpAnswer-${index}" data-follow-up-answer rows="2" placeholder="${t("ph.followUpAnswer")}"></textarea>
         </div>
       </article>`;
     })
@@ -1258,13 +1263,13 @@ function openFollowUpModal({ calling = "", followUps = [] } = {}) {
   if (els.followUpKicker) {
     els.followUpKicker.textContent =
       followUps.length === 1
-        ? "1 detail likely to come up"
-        : `${followUps.length} details likely to come up`;
+        ? t("followUp.kickerOne")
+        : t("followUp.kickerMany", { count: followUps.length });
   }
   if (els.followUpCalling) {
     els.followUpCalling.hidden = !followUpCalling;
     els.followUpCalling.textContent = followUpCalling
-      ? `Calling · ${followUpCalling}`
+      ? t("followUp.calling", { name: followUpCalling })
       : "";
   }
   renderFollowUpQuestions(followUps);
@@ -1286,15 +1291,15 @@ function skipFollowUps({ confirmIfDirty = true } = {}) {
   }
   closeFollowUpModal();
   setDictateStatus(
-    "Brief filled. You can add more in Facts for the call, or the agent will check with you if asked.",
+    t("status.briefFilledAfterSkip"),
   );
-  toast("Skipped extra details. The agent will check with you on the call if asked.");
+  toast(t("toast.skippedFollowUps"));
 }
 
 async function applyFollowUps() {
   if (followUpApplyInFlight || fillInFlight || agent.isRunning()) return;
   if (isDictating()) {
-    toast("Stop dictation first so you can review the text.", "error");
+    toast(t("toast.stopDictationFirst"), "error");
     return;
   }
   const answers = collectFollowUpAnswers();
@@ -1311,7 +1316,7 @@ async function applyFollowUps() {
   if (els.followUpApplyIdle) els.followUpApplyIdle.hidden = true;
   if (els.followUpApplyWorking) els.followUpApplyWorking.hidden = false;
   syncBriefActionButtons();
-  setFollowUpStatus("Adding those details to the brief…");
+  setFollowUpStatus(t("status.addingFollowUps"));
   try {
     syncFieldsFromDom();
     const data = await api("/api/call-agent/apply-follow-ups", {
@@ -1333,17 +1338,17 @@ async function applyFollowUps() {
     closeFollowUpModal();
     toast(
       used
-        ? `Details added · used ${used} of call time`
-        : "Those details are in the brief.",
+        ? t("toast.detailsAddedWithUsed", { used })
+        : t("toast.detailsAdded"),
     );
     setDictateStatus(
       used
-        ? `Details added · used ${used} of your remaining call time. Review the brief, then start the call.`
-        : "Details added. Review the brief, then start the call.",
+        ? t("status.detailsAddedWithUsed", { used })
+        : t("status.detailsAdded"),
     );
   } catch (error) {
-    toast(error.message || "Could not add those details.", "error");
-    setFollowUpStatus("Could not add those details. Try again, or skip and handle it on the call.");
+    toast(error.message || t("toast.addDetailsFailed"), "error");
+    setFollowUpStatus(t("status.addDetailsFailed"));
   } finally {
     followUpApplyInFlight = false;
     if (els.followUpApplyBtn) {
@@ -1361,19 +1366,19 @@ async function fillBriefFromNotes() {
   if (fillInFlight || transcribeInFlight || followUpApplyInFlight || agent.isRunning()) return;
   if (isFollowUpOpen()) return;
   if (isDictating()) {
-    toast("Stop dictation first so you can review the text.", "error");
+    toast(t("toast.stopDictationFirst"), "error");
     return;
   }
   syncFieldsFromDom();
   const notes = String(els.fillNotes?.value || "").trim();
   if (!notes && !dictateBlob) {
-    toast("Type what you need done, or dictate it first.", "error");
+    toast(t("toast.typeOrDictate"), "error");
     return;
   }
   fillInFlight = true;
   setFillWorking(true);
   syncBriefActionButtons();
-  setDictateStatus("Writing the goal, how to handle the call, and checking what they’ll likely ask…");
+  setDictateStatus(t("status.fillingBrief"));
   try {
     const payload = {
       notes,
@@ -1400,14 +1405,14 @@ async function fillBriefFromNotes() {
     const followUps = Array.isArray(data.followUps) ? data.followUps : [];
     toast(
       used
-        ? `Brief filled · used ${used} of call time`
-        : "Brief filled.",
+        ? t("toast.briefFilledWithUsed", { used })
+        : t("toast.briefFilled"),
     );
     if (followUps.length) {
       setDictateStatus(
         used
-          ? `Brief filled · used ${used} of your remaining call time. Add any missing details, or skip.`
-          : "Brief filled. Add any missing details, or skip.",
+          ? t("status.briefFilledFollowUpWithUsed", { used })
+          : t("status.briefFilledFollowUp"),
       );
       openFollowUpModal({
         calling: data.calling,
@@ -1416,13 +1421,13 @@ async function fillBriefFromNotes() {
     } else {
       setDictateStatus(
         used
-          ? `Brief filled · used ${used} of your remaining call time.`
-          : "Brief filled. Review the fields, then start the call.",
+          ? t("status.briefFilledWithUsed", { used })
+          : t("status.briefFilledReady"),
       );
     }
   } catch (error) {
-    toast(error.message || "Could not fill the brief.", "error");
-    setDictateStatus("Could not fill the brief. Check the notes and try again.");
+    toast(error.message || t("toast.fillFailed"), "error");
+    setDictateStatus(t("status.fillFailed"));
   } finally {
     fillInFlight = false;
     setFillWorking(false);
@@ -1475,7 +1480,7 @@ function openEndCallConfirm() {
 function renderLive(state) {
   const running = agent.isRunning();
   const paused = Boolean(state.paused);
-  els.statusLabel.textContent = state.statusMessage || "Idle";
+  els.statusLabel.textContent = t(state.statusMessage || "status.idle");
   els.statusDot.className = `status-dot${
     state.status === "paused" || paused
       ? " paused"
@@ -1491,11 +1496,11 @@ function renderLive(state) {
   els.startBtn.disabled = running;
   els.stopBtn.disabled = !running;
   els.pauseBtn.disabled = !agent.canTogglePause();
-  els.pauseBtn.textContent = paused ? "Resume" : "Pause";
+  els.pauseBtn.textContent = paused ? t("btn.resume") : t("btn.pause");
   els.pauseBtn.setAttribute("aria-pressed", paused ? "true" : "false");
   els.pauseBtn.title = paused
-    ? "Resume the agent"
-    : "Pause the agent without ending the call";
+    ? t("title.resume")
+    : t("title.pause");
   els.pauseBtn.classList.toggle("is-paused", paused);
   els.checkMicBtn.disabled = running;
   if (!running) closeEndCallConfirm();
@@ -1505,10 +1510,10 @@ function renderLive(state) {
     ? collapseAdjacentDuplicateTurns(state.transcript)
         .map((turn) => renderTranscriptTurn(turn, state))
         .join("")
-    : `<p class="notice">Live transcript appears here. What was said on top, translation into your language underneath. Jump in anytime — if they ask for something missing, the agent will check with you.</p>`;
+    : `<p class="notice">${t("live.emptyTranscript")}</p>`;
   els.transcript.scrollTop = els.transcript.scrollHeight;
   const markdown = state.summaryReport?.markdown || "";
-  els.summaryBody.textContent = markdown || "No report yet. End a call, then write what was said, what was done, what was captured, and anything still outstanding.";
+  els.summaryBody.textContent = markdown || t("report.empty");
   if (running && state.startedAt) {
     const writeDuration = () => {
       els.durationLabel.textContent = formatDuration(agent.durationSec() * 1000);
@@ -1525,23 +1530,23 @@ function renderLive(state) {
 }
 
 function renderBilling() {
-  const planName = billing?.planName || "Free";
+  const planName = billing?.planName || t("plan.free");
   const remaining = billing?.remainingSeconds ?? billing?.credits ?? 0;
   els.planLabel.textContent = planName;
   els.creditBalance.textContent = formatCallTime(remaining);
   els.settingsBalance.textContent = formatCallTime(remaining);
   const paid = billing?.plan === "pro";
   els.planCopy.textContent = paid
-    ? `You are on Paid (£12 / month). ${
+    ? (
         billing.cancelAtPeriodEnd
-          ? `Cancels at period end${
-              billing.currentPeriodEnd
+          ? t("billing.paidCanceling", {
+              date: billing.currentPeriodEnd
                 ? ` (${new Date(billing.currentPeriodEnd).toLocaleDateString()})`
-                : ""
-            }.`
-          : "One hour of call time is added each billing cycle."
-      }`
-    : "You are on Free. Upgrade to Paid for £12 / month and one hour of call time.";
+                : "",
+            })
+          : t("billing.paidActive")
+      )
+    : t("billing.free");
   els.upgradeBtn.hidden = paid;
   els.cancelBtn.hidden = !paid || billing.cancelAtPeriodEnd;
   els.reactivateBtn.hidden = !paid || !billing.cancelAtPeriodEnd;
@@ -1585,7 +1590,7 @@ async function loadCreditsDetails() {
               )}</td></tr>`,
           )
           .join("")}</tbody></table>`
-      : `<p class="notice">No credit lots yet.</p>`;
+      : `<p class="notice">${t("credits.lotsEmpty")}</p>`;
     const records = usage?.records || usage?.usage || [];
     els.usageTableWrap.innerHTML = records.length
       ? `<table class="usage-table"><thead><tr><th>When</th><th>Type</th><th>Used</th></tr></thead><tbody>${records
@@ -1599,10 +1604,56 @@ async function loadCreditsDetails() {
               )}</td></tr>`,
           )
           .join("")}</tbody></table>`
-      : `<p class="notice">No usage yet.</p>`;
+      : `<p class="notice">${t("credits.usageEmpty")}</p>`;
   } catch {
     els.creditLots.innerHTML = "";
   }
+}
+
+
+let pendingLocaleCode = null;
+
+function refreshLocalizedChrome() {
+  applyTranslations(document);
+  try { renderTemplates(); } catch {}
+  try { renderSessions(); } catch {}
+  try { renderLive(agent.state); } catch {}
+  try { renderBilling(); } catch {}
+}
+
+async function applyUiLocale(code, { persist = true } = {}) {
+  const next = normalizeLanguageCode(code || "en");
+  await setLocale(next, { persist });
+  refreshLocalizedChrome();
+}
+
+function closeLocaleModal() {
+  pendingLocaleCode = null;
+  if (els.localeModal) els.localeModal.hidden = true;
+}
+
+function openLocaleChangePrompt(code) {
+  const next = normalizeLanguageCode(code || "en");
+  if (next === getLocale()) return;
+  pendingLocaleCode = next;
+  const langLabel = languageName(next);
+  if (els.localeCopy) {
+    els.localeCopy.textContent = t("locale.dialogCopy", { language: langLabel });
+  }
+  if (els.localeModal) els.localeModal.hidden = false;
+}
+
+async function acceptLocaleChange() {
+  const next = pendingLocaleCode;
+  closeLocaleModal();
+  if (!next) return;
+  await applyUiLocale(next);
+  toast(t("locale.changed", { language: languageName(next) }));
+}
+
+function declineLocaleChange() {
+  // Keep UI locale preference as-is; yourLanguage already updated for the call.
+  closeLocaleModal();
 }
 
 async function boot() {
@@ -1635,6 +1686,13 @@ async function boot() {
   languages = langData.languages || [];
   agent.state.prompt = defaults.prompt || DEFAULT_PROMPT;
   fillLanguages();
+  // UI locale is independent of "You speak". First visit: adopt yourLanguage once and persist.
+  if (hasStoredLocale()) {
+    await applyUiLocale(readStoredLocale());
+  } else {
+    const initial = normalizeLanguageCode(els.yourLanguage?.value || agent.state.yourLanguage || "en");
+    await applyUiLocale(initial, { persist: true });
+  }
   writeFieldsToDom();
   await Promise.all([
     agent.loadVoices(),
@@ -1646,6 +1704,25 @@ async function boot() {
   renderLive(agent.state);
 }
 
+
+els.yourLanguage?.addEventListener("change", () => {
+  syncFieldsFromDom();
+  const next = normalizeLanguageCode(els.yourLanguage.value);
+  if (next !== getLocale()) openLocaleChangePrompt(next);
+});
+
+els.localeChangeBtn?.addEventListener("click", () => {
+  acceptLocaleChange();
+});
+els.localeKeepBtn?.addEventListener("click", () => {
+  declineLocaleChange();
+});
+els.localeModal?.addEventListener("click", (event) => {
+  if (event.target === els.localeModal) declineLocaleChange();
+});
+els.theirLanguage?.addEventListener("change", () => {
+  syncFieldsFromDom();
+});
 els.startBtn.addEventListener("click", async () => {
   syncFieldsFromDom();
   await agent.start();
@@ -1761,7 +1838,7 @@ els.cancelBtn.addEventListener("click", async () => {
   try {
     await cancelSubscription();
     await refreshBilling();
-    toast("Paid will end at the current period.");
+    toast(t("toast.paidWillEnd"));
   } catch (error) {
     toast(error.message, "error");
   }
@@ -1770,7 +1847,7 @@ els.reactivateBtn.addEventListener("click", async () => {
   try {
     await reactivateSubscription();
     await refreshBilling();
-    toast("Paid will continue.");
+    toast(t("toast.paidWillContinue"));
   } catch (error) {
     toast(error.message, "error");
   }
@@ -1790,7 +1867,7 @@ els.nameForm.addEventListener("submit", async (event) => {
       agent.state.yourName = nextName;
     }
     if (profile) profile.name = nextName;
-    toast("Name saved");
+    toast(t("toast.nameSaved"));
   } catch (error) {
     toast(error.message, "error");
   }
@@ -1805,20 +1882,20 @@ els.passwordForm.addEventListener("submit", async (event) => {
         password: document.getElementById("newPassword").value,
       }),
     });
-    toast("Password updated");
+    toast(t("toast.passwordUpdated"));
     event.target.reset();
   } catch (error) {
     toast(error.message, "error");
   }
 });
 els.deleteAccountBtn.addEventListener("click", async () => {
-  if (!window.confirm("Schedule this account for deletion in 24 hours?")) return;
+  if (!window.confirm(t("confirm.deleteAccount"))) return;
   try {
     await api("/api/users/me/deletion", {
       method: "POST",
       body: JSON.stringify({ confirm: true }),
     });
-    toast("Deletion scheduled. You can cancel from this page within 24 hours.");
+    toast(t("toast.deletionScheduled"));
   } catch (error) {
     toast(error.message, "error");
   }
@@ -1826,7 +1903,12 @@ els.deleteAccountBtn.addEventListener("click", async () => {
 
 initBrandSelects();
 initPaneResize();
-boot().catch((error) => {
+initI18n(readStoredLocale()).then(() => boot()).catch((error) => {
   console.error(error);
-  toast(error.message || "Could not load the app.", "error");
+  toast(error.message || t("toast.appLoadFailed"), "error");
+});
+
+
+onLocaleChange(() => {
+  refreshLocalizedChrome();
 });

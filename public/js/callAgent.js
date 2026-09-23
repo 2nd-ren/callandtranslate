@@ -1,3 +1,4 @@
+import { t } from "./i18n.js";
 import {
   CALL_AGENT_CLOCK_REFRESH_MS,
   VOICE_PREFERRED_SAMPLE_RATE,
@@ -75,7 +76,7 @@ export class CallAgent {
   emptyState() {
     return {
       status: "inactive",
-      statusMessage: "Idle",
+      statusMessage: "status.idle",
       startedAt: null,
       lastDurationSec: 0,
       transcript: [],
@@ -169,7 +170,7 @@ export class CallAgent {
 
   async api(path, options = {}) {
     const token = this.getToken();
-    if (!token) throw new Error("You need to be signed in.");
+    if (!token) throw new Error(t("call.needSignIn"));
     const response = await fetch(`${apiBase()}${path}`, {
       ...options,
       credentials: "include",
@@ -181,7 +182,7 @@ export class CallAgent {
     });
     if (!response.ok) {
       const payload = await response.json().catch(() => ({}));
-      const err = new Error(payload.error || payload.message || "Request failed.");
+      const err = new Error(payload.error || payload.message || t("call.requestFailed"));
       err.status = response.status;
       err.code = payload.code;
       throw err;
@@ -231,7 +232,7 @@ export class CallAgent {
       this._preview = null;
     };
     audio.onerror = () => {
-      this.toast("No preview for this voice.", "error");
+      this.toast(t("call.noPreview"), "error");
       this._preview = null;
     };
     await audio.play();
@@ -272,26 +273,26 @@ export class CallAgent {
   }
 
   formatStartError(error) {
-    if (!error) return "Failed to start the call.";
+    if (!error) return t("call.startFailed");
     const name = String(error.name || "");
     const raw = String(error.message || "").trim();
     if (name === "NotAllowedError" || /permission|denied/i.test(raw)) {
-      return "Microphone access denied. Allow Microphone in the address bar, then try Start again.";
+      return t("call.micDenied");
     }
-    if (name === "NotFoundError") return "No microphone found.";
+    if (name === "NotFoundError") return t("call.micMissing");
     if (name === "NotReadableError") {
-      return "Microphone is in use by another app. Close it and try again.";
+      return t("call.micInUse");
     }
     if (error.status === 402) {
-      return raw || "No call time left. Upgrade to Paid for an hour a month.";
+      return raw || t("call.noCredits");
     }
-    return raw || "Failed to start the call.";
+    return raw || t("call.startFailed");
   }
 
   async start() {
     if (this.isRunning()) return;
     if (!this.state.goal.trim()) {
-      this.toast("Add a goal before starting.", "error");
+      this.toast(t("call.needGoal"), "error");
       return;
     }
     if (this._preview) {
@@ -300,7 +301,7 @@ export class CallAgent {
     }
     const state = this.state;
     state.status = "connecting";
-    state.statusMessage = "Requesting microphone";
+    state.statusMessage = "status.requestingMic";
     state.startedAt = Date.now();
     state.transcript = [];
     state.transcriptSeq = 0;
@@ -345,7 +346,7 @@ export class CallAgent {
 
   async openMedia() {
     if (!window.isSecureContext) {
-      const err = new Error("Microphone requires https or localhost.");
+      const err = new Error(t("call.micHttps"));
       err.name = "SecurityError";
       throw err;
     }
@@ -402,14 +403,14 @@ export class CallAgent {
         state.sttEnabled = false;
         if (!settled) {
           settled = true;
-          reject(new Error("Streaming transcription connection failed."));
+          reject(new Error(t("call.sttFailed")));
         }
       };
       ws.onclose = () => {
         state.sttReady = false;
         if (!settled) {
           settled = true;
-          reject(new Error("Streaming transcription connection closed."));
+          reject(new Error(t("call.sttClosed")));
         }
       };
     });
@@ -421,7 +422,7 @@ export class CallAgent {
       tokenData?.client_secret?.value ||
       tokenData?.client_secret ||
       null;
-    if (!secret) throw new Error("Voice authentication did not return a client secret.");
+    if (!secret) throw new Error(t("call.voiceNoSecret"));
     const wsUrl = buildRealtimeWebSocketUrl(tokenData.model || VOICE_REALTIME_MODEL);
     const protocols = [`xai-client-secret.${String(secret).trim()}`];
     const state = this.state;
@@ -439,7 +440,7 @@ export class CallAgent {
         else resolve();
       };
       const readyTimer = window.setTimeout(() => {
-        finish(new Error("Voice session did not become ready."));
+        finish(new Error(t("call.voiceNotReady")));
       }, 12000);
       ws.onopen = () => {
         try {
@@ -465,7 +466,7 @@ export class CallAgent {
           return;
         }
         if (!settled && data?.type === "error") {
-          const message = extractRealtimeErrorMessage(data) || "Voice API rejected the session.";
+          const message = extractRealtimeErrorMessage(data) || t("call.voiceRejected");
           if (state.audioTransport !== "json" && /transport|binary/i.test(message)) {
             state.audioTransport = "json";
             this.sendSessionUpdate();
@@ -477,11 +478,11 @@ export class CallAgent {
         this.handleVoiceEvent(data);
       };
       ws.onerror = () => {
-        finish(new Error("Voice WebSocket connection failed."));
+        finish(new Error(t("call.voiceWsFailed")));
       };
       ws.onclose = () => {
         if (!settled) {
-          finish(new Error("Voice WebSocket closed before ready."));
+          finish(new Error(t("call.voiceWsClosed")));
           return;
         }
         if (state.status !== "inactive" && state.status !== "stopping") {
@@ -506,7 +507,7 @@ export class CallAgent {
   onSessionReady() {
     const state = this.state;
     state.status = "listening";
-    state.statusMessage = "Waiting for the other person";
+    state.statusMessage = "status.waiting";
     if (!state.sessionOpenLogged) {
       state.sessionOpenLogged = true;
       this.api("/api/voice/session/open", { method: "POST", body: "{}" }).catch(() => {});
@@ -568,7 +569,7 @@ export class CallAgent {
     if (state.paused || state.ignoreAssistantAudio) return;
     if (state.status !== "speaking") {
       state.status = "speaking";
-      state.statusMessage = "Agent speaking";
+      state.statusMessage = "status.agentSpeaking";
       this.emit();
     }
     state.pcmPlayer.enqueuePcm16(
@@ -582,7 +583,7 @@ export class CallAgent {
     const state = this.state;
     if (!data?.type) return;
     if (data.type === "error") {
-      const message = extractRealtimeErrorMessage(data) || "Voice API error";
+      const message = extractRealtimeErrorMessage(data) || t("call.voiceApiError");
       if (isNonFatalRealtimeError(message)) return;
       this.toast(message, "error");
       this.stop({ skipToast: true, keepError: true, errorMessage: message });
@@ -595,11 +596,11 @@ export class CallAgent {
         state.pcmPlayer?.stop();
         sendRealtimeResponseCancel(state.voiceWebSocket);
         state.status = "listening";
-        state.statusMessage = "Someone is speaking";
+        state.statusMessage = "status.someoneSpeaking";
         this.emit();
         break;
       case "input_audio_buffer.speech_stopped":
-        state.statusMessage = "Thinking";
+        state.statusMessage = "status.thinking";
         this.emit();
         break;
       case "response.created":
@@ -621,7 +622,7 @@ export class CallAgent {
       case "response.output_audio.done":
         if (state.status !== "stopping") {
           state.status = "listening";
-          state.statusMessage = "Waiting for the other person";
+          state.statusMessage = "status.waiting";
           this.emit();
         }
         break;
@@ -771,7 +772,7 @@ export class CallAgent {
     state.paused = true;
     state.pausedAt = Date.now();
     state.status = "paused";
-    state.statusMessage = "Paused — agent is silent, call still open";
+    state.statusMessage = "status.pausedOpen";
     state.ignoreAssistantAudio = true;
     state.pcmPlayer?.stop();
     this.setMicEnabled(false);
@@ -789,7 +790,7 @@ export class CallAgent {
     }
     state.paused = false;
     state.status = "listening";
-    state.statusMessage = "Waiting for the other person";
+    state.statusMessage = "status.waiting";
     this.setMicEnabled(true);
     this.emit();
   }
@@ -866,12 +867,12 @@ export class CallAgent {
     }
     if (keepError) {
       state.status = "error";
-      state.statusMessage = errorMessage || "Error";
+      state.statusMessage = errorMessage || t("status.error");
     } else {
       state.status = "inactive";
-      state.statusMessage = "Idle";
+      state.statusMessage = "status.idle";
       if (!skipToast && durationSec > 0) {
-        this.toast(`Call ended · ${formatDuration(durationSec * 1000)}`);
+        this.toast(t("call.ended", { duration: formatDuration(durationSec * 1000) }));
       }
     }
     this.emit();
@@ -935,7 +936,7 @@ export class CallAgent {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       for (const track of stream.getTracks()) track.stop();
-      this.toast("Microphone is ready.");
+      this.toast(t("call.micReady"));
     } catch (error) {
       this.toast(this.formatStartError(error), "error");
     }

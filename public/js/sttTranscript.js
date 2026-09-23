@@ -1,3 +1,4 @@
+import { t } from "./i18n.js";
 /**
  * xAI streaming STT (`transcript.partial`) uses two flags:
  *   is_final=false                 interim — text may still change
@@ -21,16 +22,29 @@ export function spokenTextKey(text) {
     .trim();
 }
 
+function tr(key, fallback, vars) {
+  const value = t(key, vars);
+  if (value === key) {
+    return String(fallback ?? key).replace(/\{(\w+)\}/g, (_, name) =>
+      vars && vars[name] != null ? String(vars[name]) : `{${name}}`,
+    );
+  }
+  return value;
+}
+
 export function displaySpeakerLabel(speaker) {
   const name = String(speaker || "").trim();
-  if (!name) return "Other person";
-  if (name === "Agent" || name === "You") return name;
+  if (!name) return tr("speaker.other", "Other person");
+  if (name === "Agent") return tr("speaker.agent", "Agent");
+  if (name === "You") return tr("speaker.you", "You");
   const caller = name.match(/^Caller(?:\s+(\d+))?$/i);
   if (caller) {
     const n = caller[1] ? Number(caller[1]) : 1;
-    return n > 1 ? `Other person ${n}` : "Other person";
+    return n > 1
+      ? tr("speaker.otherN", "Other person {n}", { n })
+      : tr("speaker.other", "Other person");
   }
-  if (/^Speaker(?:\s+\d+)?$/i.test(name)) return "Other person";
+  if (/^Speaker(?:\s+\d+)?$/i.test(name)) return tr("speaker.other", "Other person");
   return name;
 }
 
